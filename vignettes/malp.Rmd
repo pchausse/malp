@@ -1,0 +1,154 @@
+---
+title: "The Maximum Agreement Prediction via the Concordance Correlation Coefficient"
+author: "Taeho Kim^[Lehigh University, tak422@lehigh.edu], George Luta^[Georgetown University, George.Luta@georgetown.edu], Matteo Bottai^[Karolinska Institutet, matteo.bottai@ki.se], Pierre Chausse^[University of Waterloo, pchausse@uwaterloo.ca], Gheorghe Doros^[Boston University,, doros@bu.edu], Edsel A. Pena^[University of South Carolina, pena@stat.sc.edu]"
+date: ""
+output: rmarkdown::html_vignette
+abstract: "The vignette explains how to use the malp package to compute maximum agreement prection, construct confidence intervals for the prediction and illustrate the result."
+vignette: >
+  %\VignetteIndexEntry{The Maximum Agreement Prediction via the Concordance Correlation Coefficient}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+
+# The `malp` package
+
+## Estimation function
+
+Let's consider a sample $\{(X_i, Y_i)\}_{i=1}^n$ of size $n$, where
+$X_i$ is a $p\times 1$ column vector and $Y_i$ is a scalar. The
+maximum agreement linear predictor (MALP) for a realization $x_0$ is
+defined as:
+
+\[
+\begin{split}
+\hat{Y}^*(x_0)  & =  \bar{Y} + \frac{1}{\hat{\gamma}} (x_0-\bar{X})'
+\mathbf{S}_\mathrm{xx}^{-1}S_\mathrm{xy}\\
+& = \left(\bar{Y} -\frac{1}{\hat{\gamma}}\bar{X}'S_\mathrm{xx}^{-1}S_\mathrm{xy}
+\right) + x_0'\left(\frac{1}{\hat{\gamma}}S_\mathrm{xx}^{-1}S_\mathrm{xy}
+\right) \\
+& = \hat\alpha_0 + x_0'\hat\alpha_1\\
+& = \hat{\alpha}'X_0\,,
+\end{split}
+\]
+
+where $X_0=\{1,~x_0'\}'$ and 
+
+\begin{eqnarray*}
+\bar{Y}=\frac{1}{n}\sum_{i=1}^n Y_i; & \bar{X}=\frac{1}{n}\sum_{i=1}^n X_i\\
+S_\mathrm{xx} = \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(X_i-\bar{X})' ;&
+S_\mathrm{xy} = \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(Y_i-\bar{Y})\\
+\hat{\gamma} = \frac{\sqrt{S_\mathrm{YX} S_\mathrm{XX}^{-1} S_\mathrm{XY}}}{
+S_\mathrm{Y}}
+\end{eqnarray*}
+
+and $S_\mathrm{Y}$ is the estimated standard deviation of $Y$. The
+function `malp` return an object of class "malp". its `print` method
+prints the vector $\hat{\alpha}$
+
+```{r}
+library(malp)
+set.seed(112233)
+X1 <- rnorm(100)
+X2 <- rnorm(100)
+Y <- 1+X1-X2+rnorm(100)
+dat <- data.frame(Y,X1,X2)
+fit <- malp(Y~X1+X2, dat)
+fit
+```
+
+The coefficients can be extracted from the "malp" object 
+
+```{r}
+coef(fit)
+```
+
+## The `vcov` method
+
+There is no asymptotic theory for the coefficients at the moment, so
+the standard errors can be obtained by either the Boostrap or
+Jackknife method.
+
+```{r}
+vcov(fit, "Boot", B=200)
+vcov(fit, "Jackknife")
+```
+
+## The `summary'  method
+
+This is the method to print the coefficient table with standard
+errors, t-ratios and p-values. As for the `vcov` method, the standard
+error can be computed using a Bootstrap or Jackknife method.
+
+```{r}
+summary(fit, vcovMet="Jackknife")
+```
+
+## The `predict` method
+
+The `predict` method for `malp` objects is very similar to the one for
+`lm` objects. The main difference is that it returns both the MALP and
+the least squares prediction (LSLP). By default, it only produces the
+fitted values. The result is returned as a list with two elements:
+MALP and LSLP. For example, we can obtain the fitted values of MALP as
+follows:
+
+```{r}
+Yhat <- predict(fit)$MALP
+```
+
+For prediction using a different set of regressors, we use the
+argument `newdata`. The data must be in a 'data.frame' format and must
+include all regressors included in the model. For example, if we want
+the prediction for $X1=\{0\}$ and $X2=\{-0.5,0.5\}$, we first define
+the new data:
+
+```{r}
+newd <- data.frame(X1=0, X2=c(-0.5, 0.5))
+```
+
+Then, we add it to the `predict` method
+
+```{r}
+predict(fit, newdata=newd)$MALP
+```
+
+To obtain the standard errors of the predictions, we set the argument
+`se.fit` to TRUE. In that case, the predictions become the sub-element
+`fit` of the element `MALP` of `LSLP` and the standard errors are in
+the sub-element `se.fit`. Three options are currently available for
+the standard error of the prediction: "Asymptotic", "Boot" or
+"Jackknife". Currently, the default is the estimated asymptotic
+standard error, which is only valid if the variables are jointly
+normal. If the method "Boot" is selected, it is possible to change the
+default number of bootstrap samples, by setting the argument 'B' to a
+different integer. For example:
+
+```{r}
+pr <- predict(fit, newdata=newd, se.fit=TRUE, vcovMet="Boot", B=100)
+pr$MALP$fit
+pr$MALP$se.fit
+```
+
+If the argument `interval` is set to "confidence", the method returns
+the prediction, the lower and upper bounds of the confidence interval. The
+level of the interval is set by the argument 'level'. The default is
+95%. 
+
+```{r}
+pr <- predict(fit, newdata=newd, vcovMet="As", interval="confidence", level=0.90)
+pr$MALP
+```
+
+## The `plot` method
+
+Currently, the method returns only a graph of $Y$ against the
+predictions. The 45% line is added to better see the level of
+agreement. 
+
+```{r, fig.show='hold', out.width='45%'}
+plot(fit, main="MALP for simulated data", cex=.3)
+plot(fit, includeLS=TRUE, main="MALP and LSLP for simulated data", cex=.3)
+```
