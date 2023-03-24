@@ -127,7 +127,7 @@ default number of bootstrap samples, by setting the argument 'B' to a
 different integer. For example:
 
 ```{r}
-pr <- predict(fit, newdata=newd, se.fit=TRUE, vcovMet="Boot", B=100)
+pr <- predict(fit, newdata=newd, se.fit=TRUE, vcovMet="Boot", B.=100)
 pr$MALP$fit
 pr$MALP$se.fit
 ```
