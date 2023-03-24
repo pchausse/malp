@@ -6,10 +6,14 @@ The function predicts the dependent variable using models estimated by
 the maximum agreement method.
 }
 \usage{
-\method{predict}{malp}(object, newdata=NULL, se.fit = FALSE,
-                         interval = c("none","confidence"), level=0.95, 
-                         includeLS=FALSE, LSdfCorr=FALSE,
-                         vcovMet=c("Asymptotic", "Boot", "Jacknife"), ...)
+\method{predict}{malp}(object, newdata = NULL, se.fit = FALSE,
+                          interval = c("none", "confidence"), level = 0.95,
+                          includeLS = FALSE, LSdfCorr = FALSE, 
+                          vcovMet = c("Asymptotic", "Boot", "Jackknife"),
+                          bootInterval=FALSE,
+                          bootIntType=c("all", "norm", "basic",
+                                        "stud", "perc", "bca"),
+                          Bse.=100, B.=300, ...) 
 }
 \arguments{
   \item{object}{An object of class \code{malp}}
@@ -24,5 +28,12 @@ the maximum agreement method.
     prediction?}
   \item{LSdfCorr}{Should we correct for the degrees of freedom?}
   \item{vcovMet}{Method to compute the standard error of the prediction}
+  \item{bootInterval}{If set to \code{TRUE}, a bootstrap condifence
+    interval is computed}
+  \item{bootIntType}{This is the type of bootstrap confidence interval.}
+  \item{Bse.}{The number of bootstrap samples to compute the standard
+    errors.}
+  \item{B.}{The number of bootstrap sample to compute the confidence
+    intervals.}  
 \item{...}{Argument for other type of objects}
 }
