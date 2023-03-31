@@ -64,8 +64,13 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
     pr2 <- coef(object)[1] + pr$fit/object$gamma - coef(object$lm)[1]/object$gamma
     n <- nobs(object$lm)
     df <- object$lm$df.residual
-    if ((interval == "none") & !se.fit) 
-        return(list(MALP = pr2, LSLP = pr$fit))
+    if ((interval == "none") & !se.fit)
+    {
+        if (includeLS)
+            return(list(MALP = pr2, LSLP = pr$fit))
+        else
+            return(pr2)
+    }
     sigLS <- pr$se.fit^2 * n
     if (vcovMet == "Asymptotic") {
         if (!LSdfCorr) 
@@ -74,12 +79,11 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
         tmp <- 2 * g2/(1 + object$gamma) - 1 - (1 - g2)/(object$varY * 
             g2) * (pr$fit - object$muY)^2
         sigMA <- (sigLS + object$varY * (1 - g2) * tmp)/g2
-    }
-    else {
+    } else {
         tt <- terms(object$lm)
         Terms <- delete.response(tt)
         if (is.null(newdata)) {
-            model.frame(Terms, object$data, xlev = object$lm$xlevels)
+            m <- model.frame(Terms, object$data, xlev = object$lm$xlevels)
         }
         else {
             m <- model.frame(Terms, newdata, xlev = object$lm$xlevels)
@@ -89,33 +93,41 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
         sigMA <- apply(X, 1, function(x) c(t(x) %*% V %*% x) * 
             nobs(object$lm))
     }
+    sigMA <- sqrt(sigMA/n)
+    sigLS <- sqrt(sigLS/n)
     if (interval == "confidence") {
         crit <- qnorm(0.5 + level/2)
         pr <- cbind(fit = pr$fit, lwr = pr$fit - crit * sigLS, 
             upr = pr$fit + crit * sigLS)
         pr2 <- cbind(fit = pr2, lwr = pr2 - crit * sigMA, upr = pr2 + 
             crit * sigMA)
-    }
-    else {
+    } else {
         pr <- pr$fit
     }
-    if (!se.fit) 
-        return(list(MALP = pr2, LSLP = pr))
-    list(MALP = list(fit = pr2, se.fit = sigMA), LSLP = list(fit = pr, 
-        se.fit = sigLS))
+    if (!se.fit)
+    {
+        if (includeLS)
+            return(list(MALP = pr2, LSLP = pr))
+        else
+            return(pr2)
+    }
+    if (includeLS)
+        list(MALP = list(fit = pr2, se.fit = sigMA),
+             LSLP = list(fit = pr, se.fit = sigLS))
+    else 
+        list(fit = pr2, se.fit = sigMA)
 }
-
 
 plot.malp <- function (x, y=NULL, includeLS=FALSE,
                        pch=21:22, col=2:3, bg=2:3, ...)
 {
-    yhat <- predict(x)$MALP
+    yhat <- predict(x)
     y <- model.response(model.frame(x$lm))
     plot(yhat, y, pch=pch[1], col=col[1], bg=bg[1], ...)
     abline(1,1)
     if (includeLS)
     {
-        yhat2 <- predict(x)$LSLP
+        yhat2 <- predict(x, includeLS=TRUE)$LSLP
         points(yhat2, y, pch=pch[2], col=col[2], bg=bg[2], ...)
         legend("topleft", c("MALP","LSLP"), pch=pch, col=col,
                pt.bg=bg, bty='n', lty=NULL)
@@ -156,7 +168,7 @@ summary.malp <- function(object, vcovMet=c("Boot", "Jackknife"), ...)
     coefs <- cbind(b, se, t, pv)
     dimnames(coefs) <- list(names(b),
                             c("Estimate", "Std. Error", "t value", "Pr(>|t|)"))
-    yhat <- predict(object)$MALP
+    yhat <- predict(object)
     y <- model.response(model.frame(object$lm))
     CCC <- 2*cov(y, yhat)/(var(yhat)+object$varY+(mean(yhat)-object$muY)^2)
     PCC <- cor(y,yhat)
@@ -189,8 +201,8 @@ bootMALP <- function (object, newdata = NULL, B=300, Bse=100, se.fit=FALSE,
         pr <- predict(fitB, newdata=newdata., se.fit=se.fit.,
                       vcovMet=vcovMet., Bse.=Bse.)
         if (se.fit.)
-            c(pr$MALP$fit, pr$MALP$se.fit)
-        else pr$MALP
+            c(pr$fit, pr$se.fit)
+        else pr
     }
     res <- boot(object, .bootPr, R=B, newdata.=newdata, vcovMet.=vcovMet,
                 Bse.=Bse, se.fit.=se.fit)
