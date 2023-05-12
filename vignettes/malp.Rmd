@@ -8,147 +8,304 @@ vignette: >
   %\VignetteIndexEntry{The Maximum Agreement Prediction via the Concordance Correlation Coefficient}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+header-includes:
+- \newcommand{\trp}{^{\tt T}}
+- \DeclareMathOperator{\tr}{tr}
+- \newcommand{\trace}{\mbox{\rm\bf tr}}
+- \DeclareMathOperator*{\argmax}{arg\,max}
+- \DeclareMathOperator*{\argmin}{arg\,min}
+- \newcommand{\E}{\mathrm{E}}
+- \newcommand{\Var}{\mathrm{Var}}
+- \newcommand{\Cov}{\mathrm{Cov}}
+- \newcommand{\Cor}{\mathrm{Cor}}
+- \newcommand{\CCC}{\mathrm{CCC}}
+- \newcommand{\PCC}{\mathrm{PCC}}
+- \newcommand{\MSE}{\mathrm{MSE}}
+- \newcommand{\bs}{\boldsymbol} 
 ---
+
 
 # Introduction
 
+Suppose we have a $p\times 1$ vector of covariates $x$ and a dependent
+variable $Y$. The MALP predictor is defined as:
+
+\[
+\tilde{Y}^\star(x)   = 
+  \left(1-1/\gamma\right)\mu_\mathrm{Y}+ \left( 1/\gamma\right) \tilde{Y}^\dagger(x)\,,
+\]
+
+where $\gamma$ is the concordance correlation coefficient (CCC),
+$\mu_\mathrm{Y}$ is the population mean of Y and
+$\tilde{Y}^\dagger(x)$ is the best linear predictor. For any predictor
+$\tilde{Y}$, the CCC is defined as
+
+\[
+\gamma = \frac{2\sigma_{\mathrm{Y}\tilde{\mathrm{Y}}}}{
+\sigma^2_\mathrm{Y}+\sigma^2_{\tilde{\mathrm{Y}}}+(\mu_\mathrm{Y}-\mu_{\tilde{\mathrm{Y}}})}\,,
+\]
+
+where $\sigma_{xy}$ is the covariance between $x$ and $y$ and
+$\sigma^2_x$ is the variance of $x$. When the predictor is the MALP
+defined above, the CCC is equal to the square root of the coefficient
+of determination $R^2$ of the best linear predictor.
+
+Let $X=\{1,x'\}'$ and let the best linear predictor
+$\tilde{Y}^\dagger(x)$ be $X'\beta\equiv \beta_1+x'\beta_2$, where
+$\beta_1=\mu_\mathrm{Y}-\mu_\mathrm{x}'\beta_2$ and
+$\beta_2=\Var(X)^{-1}\Cov(X,Y)$, then the MALP can be written as:
+
+\begin{eqnarray*}
+\tilde{Y}^\star(x)  & = & 
+  \left(1-1/\gamma\right)\mu_\mathrm{Y}+ \left( 1/\gamma\right) \left[X'\beta\right]\\
+&=& \left[(1-1/\gamma)\mu_\mathrm{Y}+\beta_1/\gamma\right] + 
+x'[\beta_2/\gamma] \\
+&\equiv & \alpha_1 + x'\alpha_2\\
+&\equiv & X'\alpha
+\end{eqnarray*}
+
+Assuming we have an IID sample $\{Y_i,x_i\}$ of size $n$, a consistent estimator of the MALP at $x=x_0$ is:
+
+\[
+\hat{Y}^\star(x_0) = \hat{\alpha}_1 + x_0'\hat{\alpha}_2\,
+\]
+
+where
+$\hat{\alpha}_1=(1-1/\hat\gamma)\overline{\mathrm{Y}}+\hat\beta_1/\hat\gamma$,
+$\hat{\alpha}_2 = \hat{\beta}_2/\hat\gamma$, $\hat\beta_1$ and
+$\hat{\beta}_2$ are the least square estimators,
+$\overline{\mathrm{Y}}$ is the sample mean of Y and $\hat\gamma$ is
+the square root of the least square coefficient of determination.
+
+If we assume that $\{Y,x\}$ are jointly normal, the MALP predictor
+$\hat{Y}^\star(x_0)$ is asymptotically normal with the following
+variance:
+
+\begin{eqnarray*}
+\sigma_\mathrm{MA}^2(x_0)  &=&  \sigma_\mathrm{Y}^2(1-\gamma^2) \times  \\
+ & & \left[\frac{2}{1 + \gamma} +  \frac{1}{\gamma^2} (x_0 - \mu_\mathrm{X})' \Var(\mathrm{X})^{-1} (x_0 - \mu_\mathrm{X}) 
+- \frac{(1-\gamma^2)}{\sigma_\mathrm{Y}^2 \gamma^4} \left[\Cov(\mathrm{X},\mathrm{Y})'\Var(\mathrm{X})^{-1} (x_0 - \mu_\mathrm{X})\right]^2\right]\\
+&=&  \sigma_\mathrm{Y}^2(1-\gamma^2) \times  \\
+ & & \left[\frac{2}{1 + \gamma} +  \frac{1}{\gamma^2} (x_0 - \mu_\mathrm{X})' \Var(\mathrm{X})^{-1} (x_0 - \mu_\mathrm{X}) 
+- \frac{(1-\gamma^2)}{\sigma_\mathrm{Y}^2 \gamma^4} \left[\tilde{Y}^\dagger(x_0)-\mu_\mathrm{Y}\right]^2\right]\\
+\end{eqnarray*}
+
+Since the asymptotic variance of the estimated best linear predictor
+is
+
+\[
+\sigma_\mathrm{LS}^2(x_0) = \sigma_\mathrm{Y}^2(1-\gamma^2) \left[1 + (x_0 - \mu_\mathrm{X}) \Sigma_\mathrm{XX}^{-1}(x_0 - \mu_\mathrm{X})'\right]
+\]
+
+We can write $\sigma_\mathrm{MA}^2(x_0)$ as a function of $\sigma_\mathrm{LS}^2(x_0)$:
+
+\[
+\sigma_\mathrm{MA}^2(x_0) = 
+\frac{\sigma_\mathrm{LS}^2(x_0)}{\gamma^2} + 
+\frac{\sigma_\mathrm{Y}^2(1-\gamma^2)}{\gamma^2} \times
+\left[
+\frac{2\gamma^2-\gamma-1}{1+\gamma} -
+\frac{(1-\gamma^2)}{\sigma_\mathrm{Y}^2 \gamma^2}[\tilde{Y}^\dagger(x_0)-\mu_\mathrm{Y}]^2
+\right]
+\]
+
+We obtain consistent estimator of the variances by replacing the
+population values of $\gamma$, $\sigma_\mathrm{LS}^2(x_0)$,
+$\sigma_\mathrm{Y}^2$, $\mu_\mathrm{X}$, $\Sigma_{\mathrm{XX}}$,
+$\tilde{Y}^\dagger(x_0)$ and $\mu_\mathrm{Y}$ by their sample
+estimates. Note that there is no unique way to estimate
+$\sigma_\mathrm{LS}^2(x_0)$. For example, if we estimate it using the following:
+
+\begin{eqnarray*}
+\hat\sigma_\mathrm{Y}^2 &=& \frac{1}{n-1}\sum_{i=1}^n (Y_i-\bar{Y})^2\\
+\hat\gamma &=& \frac{\sum_{i=1}^n (Y_i-\bar{Y})(\hat{Y}^\star_i-\bar{Y})}{
+\sqrt{\sum_{i=1}^n (Y_i-\bar{Y})^2\sum_{i=1}^n (\hat{Y}^\star_i-\bar{Y})^2}}\\
+\hat\Sigma_\mathrm{XX}&=& \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(X_i-\bar{X})'\,,
+\end{eqnarray*}
+
+which is the default method that we use in the package, we have the
+following relationship between this estimator and the one computed by
+the `predict` method for `lm` objects. 
+
+\[
+\hat\sigma_\mathrm{LS}^{2}(x_0) = \frac{n-p-1}{n}\hat\sigma_\mathrm{LS}^{2(R)}(x_0) + \frac{\hat\sigma_\mathrm{Y}^2(1-\hat{\gamma}^2)}{n}\,,
+\]
+
+where $\hat\sigma_\mathrm{LS}^{2(R)}$ is the one computed by
+`predict.lm` and $\hat\sigma_\mathrm{LS}^{2}(x_0)$ is the default
+estimator computed in the `malp` package. The difference comes for how
+the different estimators from the expression are adjusted for the loss
+of degrees of freedom. The package offer the option of using the
+`predict.lm` correction.
 
 # The `malp` package
 
-## Estimation function
-
-Let's consider a sample $\{(X_i, Y_i)\}_{i=1}^n$ of size $n$, where
-$X_i$ is a $p\times 1$ column vector and $Y_i$ is a scalar. The
-maximum agreement linear predictor (MALP) for a realization $x_0$ is
-defined as:
-
-\[
-\begin{split}
-\hat{Y}^*(x_0)  & =  \bar{Y} + \frac{1}{\hat{\gamma}} (x_0-\bar{X})'
-\mathbf{S}_\mathrm{xx}^{-1}S_\mathrm{xy}\\
-& = \left(\bar{Y} -\frac{1}{\hat{\gamma}}\bar{X}'S_\mathrm{xx}^{-1}S_\mathrm{xy}
-\right) + x_0'\left(\frac{1}{\hat{\gamma}}S_\mathrm{xx}^{-1}S_\mathrm{xy}
-\right) \\
-& = \hat\alpha_0 + x_0'\hat\alpha_1\\
-& = \hat{\alpha}'X_0\,,
-\end{split}
-\]
-
-where $X_0=\{1,~x_0'\}'$ and 
-
-\begin{eqnarray*}
-\bar{Y}=\frac{1}{n}\sum_{i=1}^n Y_i; & \bar{X}=\frac{1}{n}\sum_{i=1}^n X_i\\
-S_\mathrm{xx} = \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(X_i-\bar{X})' ;&
-S_\mathrm{xy} = \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(Y_i-\bar{Y})\\
-\hat{\gamma} = \frac{\sqrt{S_\mathrm{YX} S_\mathrm{XX}^{-1} S_\mathrm{XY}}}{
-S_\mathrm{Y}}
-\end{eqnarray*}
-
-and $S_\mathrm{Y}$ is the estimated standard deviation of $Y$. The
-function `malp` return an object of class "malp". its `print` method
-prints the vector $\hat{\alpha}$
+The main function is `malp`, which returns an object of class
+`malp`. The purpose of this function is to compute the estimates
+$\hat\alpha$. The function has two arguments: `formula` and
+`data`. The former is like the formula provided to `lm` for linear
+regressions and `data` is a `data.frame` containing all variables
+included in the formula. In the following example, we have one
+independent variable and one dependent variable.
 
 ```{r}
+## Data just for the testing
 library(malp)
-set.seed(112233)
-X1 <- rnorm(100)
-X2 <- rnorm(100)
-Y <- 1+X1-X2+rnorm(100)
-dat <- data.frame(Y,X1,X2)
-fit <- malp(Y~X1+X2, dat)
-fit
+set.seed(11223344)
+x<-rnorm(100)
+y<-1+2*x+rnorm(100)
+dat <- data.frame(x,y)
+fit <- malp(y~x, dat)
 ```
 
-The coefficients can be extracted from the "malp" object 
+The `malp` object has its own `print` method that returns the
+coefficient estimates $\hat\alpha$.
 
 ```{r}
-coef(fit)
+print(fit, digits=5)
 ```
 
 ## The `vcov` method
 
-There is no asymptotic theory for the coefficients at the moment, so
-the standard errors can be obtained by either the Boostrap or
-Jackknife method.
+Currently, there is no closed form expression for the variance of the
+coefficients. The only possible option for now is through simulation
+methods. There are two options for the simulation method: Bootstrap or
+Jackknife. For the bootstrap method, the number of bootstrap samples
+is set by the argument `B`. For example:
 
 ```{r}
-vcov(fit, "Boot", B=200)
-vcov(fit, "Jackknife")
+v1 <- vcov(fit, "Boot", B=100)
+v2 <- vcov(fit, "Jackknife")
 ```
 
-## The `summary'  method
+## The `summary` method
 
-This is the method to print the coefficient table with standard
-errors, t-ratios and p-values. As for the `vcov` method, the standard
-error can be computed using a Bootstrap or Jackknife method.
+This method returns detailed information about the estimation. In
+particular, it returns the standard errors, t-ratios and p-values of
+the $\hat{\alpha}$. The arguments of the function are to specify how
+to compute the standard errors. The options are the same as for
+`vcov`. The method returns an object of class `summary.malp`, which
+has its own `print` method.
 
 ```{r}
-summary(fit, vcovMet="Jackknife")
+print(summary(fit, "Boot", B=100), digits=5)
 ```
 
 ## The `predict` method
 
-The `predict` method for `malp` objects is very similar to the one for
-`lm` objects. The main difference is that it returns both the MALP and
-the least squares prediction (LSLP). By default, it only produces the
-fitted values. The result is returned as a list with two elements:
-MALP and LSLP. For example, we can obtain the fitted values of MALP as
-follows:
+The method works like the `predict.lm` method. By default, it predicts
+the dependent variables for the same values of the covariates used to
+fit the model.
 
 ```{r}
-Yhat <- predict(fit)$MALP
+pr <- predict(fit)
+pr[1:4]
 ```
 
-For prediction using a different set of regressors, we use the
-argument `newdata`. The data must be in a 'data.frame' format and must
-include all regressors included in the model. For example, if we want
-the prediction for $X1=\{0\}$ and $X2=\{-0.5,0.5\}$, we first define
-the new data:
+In that case, it returns predicted values only. If the argument
+`se.fit` is set to `TRUE`, it returns a list with the element `fit`
+being the predicted values and the argument `se.fit` being the
+standard errors.
 
 ```{r}
-newd <- data.frame(X1=0, X2=c(-0.5, 0.5))
+pr <- predict(fit, se.fit=TRUE)
+pr$fit[1:4]
+pr$se.fit[1:4]
 ```
 
-Then, we add it to the `predict` method
+By default, the standard errors returned by `predict` are based on the
+asymptotic theory under the assumption of the joint normality of
+$\{Y,x\}$. It uses the expression from the Introduction section for
+$\hat\sigma_\mathrm{MA}^2(x_0)$ with
+$\hat\sigma_\mathrm{LS}^{2}(x_0)$. For standard errors based on the
+`predict.lm` version $\hat\sigma_\mathrm{LS}^{2(R)}(x_0)$, we set the
+argument `LSdfCorr` to `TRUE` (it stands for Least Squares degrees of
+freedom Correction).
 
 ```{r}
-predict(fit, newdata=newd)$MALP
+pr <- predict(fit, se.fit=TRUE, LSdfCorr=TRUE)
+pr$se.fit[1:4]
 ```
 
-To obtain the standard errors of the predictions, we set the argument
-`se.fit` to TRUE. In that case, the predictions become the sub-element
-`fit` of the element `MALP` of `LSLP` and the standard errors are in
-the sub-element `se.fit`. Three options are currently available for
-the standard error of the prediction: "Asymptotic", "Boot" or
-"Jackknife". Currently, the default is the estimated asymptotic
-standard error, which is only valid if the variables are jointly
-normal. If the method "Boot" is selected, it is possible to change the
-default number of bootstrap samples, by setting the argument 'B' to a
-different integer. For example:
+If we are not willing to assume normality, we have the option of
+computing the standard errors using the expression
+$\sqrt{X_0'\Var(\hat\alpha)X_0}$, where $X_0=\{1,x_0'\}'$ and
+$\Var(\hat\alpha)$ is computed with `vcov`. All we need to do is to
+set the argument `vcovMet` to either "Boot" or "Jackknife". For the
+"Boot" option, the number of bootstrap sample is set by the argument
+`Bse.`
 
 ```{r}
-pr <- predict(fit, newdata=newd, se.fit=TRUE, vcovMet="Boot", B.=100)
-pr$MALP$fit
-pr$MALP$se.fit
+pr <- predict(fit, se.fit=TRUE, vcovMet="Boot", Bse.=100)
+pr$se.fit[1:4]
 ```
 
-If the argument `interval` is set to "confidence", the method returns
-the prediction, the lower and upper bounds of the confidence interval. The
-level of the interval is set by the argument 'level'. The default is
-95%. 
+If we want to predict $Y$ for specific values of $X$, we can pass the
+specific values to the argument `newdata` as a `data.frame`. The
+data.frame must contain values for all covariates in the formula.
 
 ```{r}
-pr <- predict(fit, newdata=newd, vcovMet="As", interval="confidence", level=0.90)
-pr$MALP
+newd <- data.frame(x=c(-.3,.3,1.5))
+predict(fit, newdata=newd)
 ```
 
-## The `plot` method
 
-Currently, the method returns only a graph of $Y$ against the
-predictions. The 45% line is added to better see the level of
-agreement. 
+## Confidence Intervals
 
-```{r, fig.show='hold', out.width='45%'}
-plot(fit, main="MALP for simulated data", cex=.3)
-plot(fit, includeLS=TRUE, main="MALP and LSLP for simulated data", cex=.3)
+The confidence intervals for the predictor also comes from the
+`predict` method, but given the different options, it deserves its own
+section. By default, parametric confidence intervals are produced by
+setting the argument `interval` to "confidence".
+
+```{r}
+pr <- predict(fit, newdata=newd, interval="confidence")
+pr
+```
+
+The options for standard errors used to compute the parametric
+confidence intervals are explained in the previous section. For
+example, we can construct the intervals using the Jackknife standard
+errors this way:
+
+```{r}
+pr <- predict(fit, newdata=newd, interval="confidence", vcovMet="Jackknife")
+pr
+```
+
+Note that if the argument `se.fit` is set to `TRUE`, it returns a list
+with the element `fit` being the intervals and the element `se.fit`
+being the standard errors.
+
+It is also possible to compute bootstrap confidence intervals. The options are 
+
+- **norm**: Normal interval
+
+- **basic**: Basic interval
+
+- **stud**: Studentized intervals
+
+- **perc**: Percentile intervals
+
+- **bca**: Bias corrected intervals.
+
+To obtain one of these bootstrap confidence intervals, we set the
+argument `bootInterval` to `TRUE`. The type of interval is obtained by
+setting the argument `bootIntType` to one of the above options. If set
+to "all", the default, the functions returns all interval in a
+list. These intervals are computed using `boot` and `boot.ci` from the
+`boot` package. For the studentized interval, `se.fit` must be set to
+`TRUE`. If `bootIntType` it set to "all" and `se.fit` to `FALSE`, the
+function will not return a studentized interval. 
+
+With `bootInterval=TRUE`, the function return a list of intervals. The
+name of each element is the interval type. If `bootIntType` is not set
+to "all", the function return a list of length equal to 1.
+
+```{r}
+pr <- predict(fit, newdata=newd, bootInterval=TRUE, se.fit=TRUE,
+              vcovMet="Jackknife")
+pr$norm
+pr$stud
+pr$bca
+pr$perc
 ```
