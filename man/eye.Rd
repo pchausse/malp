@@ -9,11 +9,13 @@ measurement for 46 individuals (1 measurement per eye)
 }
 \usage{data("eye")}
 \format{
-  A data frame with 92 observations on the following 3 variables. 
+  A data frame with 92 observations on the following 5 variables. 
   \describe{
     \item{\code{Eye}}{OD for right eye and OS for left eye.}
     \item{\code{Stratus}}{time-domain Stratus OCT.}
+    \item{\code{SSS}}{Signal strength for the Stratus approach.}
     \item{\code{Cirrus}}{spectral-domain Cirrus OCT}
+    \item{\code{SSC}}{Signal strength for the Cirrus approach.}    
   }
 }
 \references{
