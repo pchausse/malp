@@ -4,18 +4,18 @@
 \title{Data on Optical Coherence Tomography (OCT)
 }
 \description{
-Eye measurements used in Abedi etal. (2011). It contains two type os
-measurement for 46 individuals (1 measurement per eye)
+Eye measurements used in Abedi et al. (2011). The original dataset
+contains two type of measurement for 46 individuals (1 measurement per
+eye). The data is then filtered to include only observations for which
+the signal strength is greater or equal to 6 for both measurement methods.
 }
 \usage{data("eye")}
 \format{
-  A data frame with 92 observations on the following 5 variables. 
+  A data frame with 56 observations on the following 3 variables. 
   \describe{
     \item{\code{Eye}}{OD for right eye and OS for left eye.}
     \item{\code{Stratus}}{time-domain Stratus OCT.}
-    \item{\code{SSS}}{Signal strength for the Stratus approach.}
     \item{\code{Cirrus}}{spectral-domain Cirrus OCT}
-    \item{\code{SSC}}{Signal strength for the Cirrus approach.}    
   }
 }
 \references{
