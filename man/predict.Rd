@@ -7,7 +7,7 @@ the maximum agreement method.
 }
 \usage{
 \method{predict}{malp}(object, newdata = NULL, se.fit = FALSE,
-                          interval = c("none", "confidence"), level = 0.95,
+                          interval = c("none", "confidence", "prediction"), level = 0.95,
                           includeLS = FALSE, LSdfCorr = FALSE, 
                           vcovMet = c("Asymptotic", "Boot", "Jackknife"),
                           bootInterval=FALSE,
@@ -21,9 +21,9 @@ the maximum agreement method.
     covariates used for the prediction. If not provided, the prediction
     is performed using the data used for the estimation.}
   \item{se.fit}{Should the function return the standard errors?}
-  \item{interval}{If set to "confidence", a confidence interval is
-    return}
-  \item{level}{The level os the confidence interval.}
+  \item{interval}{If set to "confidence", the confidence interval is
+    return and if set to "predict", it returns the predicted intervals.}
+  \item{level}{The level of the confidence interval.}
   \item{includeLS}{Should the method include the least squares
     prediction?}
   \item{LSdfCorr}{Should we correct for the degrees of freedom?}

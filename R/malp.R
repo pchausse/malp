@@ -43,7 +43,7 @@ print.malp <- function (x, ...)
 }
 
 predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
-                          interval = c("none", "confidence"), level = 0.95,
+                          interval = c("none", "confidence", "prediction"), level = 0.95,
                           includeLS = FALSE, LSdfCorr = FALSE, 
                           vcovMet = c("Asymptotic", "Boot", "Jackknife"),
                           bootInterval=FALSE,
@@ -56,6 +56,8 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
     bootIntType <- match.arg(bootIntType)
     if (bootInterval)
     {
+        if (interval=="prediction")
+            warning("interval='prediction' is ignored for bootstrap intervals.")
         res <- bootMALP(object, newdata, B., Bse., se.fit, vcovMet)
         ci <- confint(res, level=level, type.=bootIntType)
         return(ci)
@@ -93,13 +95,25 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
         sigMA <- apply(X, 1, function(x) c(t(x) %*% V %*% x) * 
             nobs(object$lm))
     }
-    sigMA <- sqrt(sigMA/n)
-    sigLS <- sqrt(sigLS/n)
-    if (interval == "confidence") {
+    if (interval == "prediction")
+    {
+        sige <- object$varY*(1-object$gamma^2)
+        if (LSdfCorr)
+            sige <- (n-1)/df*sige
+    } else {
+        sige <- 0
+    }
+    sigMA <- sqrt(sigMA/n+sige)
+    sigLS <- sqrt(sigLS/n+sige)
+    if (interval != "none") {
         crit <- qnorm(0.5 + level/2)
         pr <- cbind(fit = pr$fit, lwr = pr$fit - crit * sigLS, 
-            upr = pr$fit + crit * sigLS)
-        pr2 <- cbind(fit = pr2, lwr = pr2 - crit * sigMA, upr = pr2 + 
+                    upr = pr$fit + crit * sigLS)
+        if (interval == "prediction")
+            pr3 <- pr$fit
+        else
+            pr3 <- pr2
+        pr2 <- cbind(fit = pr2, lwr = pr3 - crit * sigMA, upr = pr3 + 
             crit * sigMA)
     } else {
         pr <- pr$fit
