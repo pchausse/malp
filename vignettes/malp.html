@@ -666,6 +666,59 @@ of length equal to 1.</p>
 ## [2,] 1.1866577 0.8181034 1.809035
 ## [3,] 2.0857456 1.3319190 3.120020</code></pre>
 </div>
+<div id="prediction-intervals" class="section level2">
+<h2>Prediction intervals</h2>
+<p>The prediction intervals for LSLP and MALP are respectively:</p>
+<p><span class="math display">\[
+\left[\hat{Y}^\dagger(x_0) \pm z_{\alpha/2}
+\sqrt{S_\mathrm{Y}(1-\gamma^2)+
+\sigma^2_\mathrm{LS}(x_0)/n}\right]
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\left[\hat{Y}^\star(x_0) + \hat{b}(x_0) \pm z_{\alpha/2}
+\sqrt{S_\mathrm{Y}(1-\gamma^2)+
+\sigma^2_\mathrm{MA}(x_0)/n}\right]
+\]</span></p>
+<p>where <span class="math inline">\(\hat{b}(x_0)\)</span> is the
+prediction bias of MALP. It turns out that <span class="math inline">\(\hat{Y}^\star(x_0) +
+\hat{b}(x_0)=\hat{Y}^\dagger(x_0)\)</span>, so the prediction interval
+for MALP can be written as</p>
+<p><span class="math display">\[
+\left[\hat{Y}^\dagger(x_0) \pm z_{\alpha/2}
+\sqrt{S_\mathrm{Y}(1-\gamma^2)+
+\sigma^2_\mathrm{MA}(x_0)/n}\right]
+\]</span></p>
+<p>Since <span class="math inline">\(S_\mathrm{Y}(1-\gamma^2)\)</span>
+is the estimated variance of the error term of least squares models, if
+the argument <code>LSdfCorr</code> is set to <code>TRUE</code>, <span class="math inline">\(S_\mathrm{Y}(1-\gamma^2)\)</span> is multiplied
+<span class="math inline">\((n-1)/df\)</span>, where <span class="math inline">\(df\)</span> is the least squares residuals degrees
+of freedom. Note that bootstrap intervals are not available for
+prediction intervals. For valid intervals in case of non-normality, we
+can set the argument <code>vcovMet</code> to either “Boot” or
+“Jackknife” to obtain a consistent estimator of <span class="math inline">\(\sigma^2_\mathrm{MA}(x_0)\)</span>.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>pr1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;prediction&quot;</span>,</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>, <span class="at">includeLS=</span><span class="cn">TRUE</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>pr2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>pr1<span class="sc">$</span>MALP</span></code></pre></div>
+<pre><code>##         fit        lwr      upr
+## 1 0.3417864 -1.7847330 2.589588
+## 2 1.7374356 -0.5156112 3.855263
+## 3 4.5287340  2.0070874 6.402157</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>pr2</span></code></pre></div>
+<pre><code>##         fit       lwr       upr
+## 1 0.3417864 0.1035505 0.5800222
+## 2 1.7374356 1.5155789 1.9592922
+## 3 4.5287340 4.2089752 4.8484927</code></pre>
+<p>Since only the variance differs between the prediction interval of
+LSLP amnd MALP, they are very close to each other:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>pr1<span class="sc">$</span>LSLP</span></code></pre></div>
+<pre><code>##         fit        lwr      upr
+## 1 0.4024273 -1.7833582 2.588213
+## 2 1.6698257 -0.5161263 3.855778
+## 3 4.2046223  2.0000434 6.409201</code></pre>
+</div>
 </div>
 <div class="footnotes footnotes-end-of-document">
 <hr />

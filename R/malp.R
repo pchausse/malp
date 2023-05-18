@@ -110,7 +110,7 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
         pr <- cbind(fit = pr$fit, lwr = pr$fit - crit * sigLS, 
                     upr = pr$fit + crit * sigLS)
         if (interval == "prediction")
-            pr3 <- pr$fit
+            pr3 <- pr[,1]
         else
             pr3 <- pr2
         pr2 <- cbind(fit = pr2, lwr = pr3 - crit * sigMA, upr = pr3 + 

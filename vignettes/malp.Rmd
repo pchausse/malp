@@ -309,3 +309,53 @@ pr$stud
 pr$bca
 pr$perc
 ```
+
+## Prediction intervals
+
+The prediction intervals for LSLP and MALP are respectively:
+
+\[
+\left[\hat{Y}^\dagger(x_0) \pm z_{\alpha/2} \sqrt{S_\mathrm{Y}(1-\gamma^2)+
+\sigma^2_\mathrm{LS}(x_0)/n}\right]
+\]
+
+and
+
+\[
+\left[\hat{Y}^\star(x_0) + \hat{b}(x_0) \pm z_{\alpha/2} \sqrt{S_\mathrm{Y}(1-\gamma^2)+
+\sigma^2_\mathrm{MA}(x_0)/n}\right]
+\]
+
+where $\hat{b}(x_0)$ is the prediction bias of MALP. It turns out that
+$\hat{Y}^\star(x_0) + \hat{b}(x_0)=\hat{Y}^\dagger(x_0)$, so the
+prediction interval for MALP can be written as
+
+\[
+\left[\hat{Y}^\dagger(x_0) \pm z_{\alpha/2} \sqrt{S_\mathrm{Y}(1-\gamma^2)+
+\sigma^2_\mathrm{MA}(x_0)/n}\right]
+\]
+
+Since $S_\mathrm{Y}(1-\gamma^2)$ is the estimated variance of the
+error term of least squares models, if the argument `LSdfCorr` is set
+to `TRUE`, $S_\mathrm{Y}(1-\gamma^2)$ is multiplied $(n-1)/df$, where
+$df$ is the least squares residuals degrees of freedom. Note that
+bootstrap intervals are not available for prediction intervals. For
+valid intervals in case of non-normality, we can set the argument
+`vcovMet` to either "Boot" or "Jackknife" to obtain a consistent
+estimator of $\sigma^2_\mathrm{MA}(x_0)$. 
+
+```{r}
+pr1 <- predict(fit, newdata=newd, interval="prediction",
+              vcovMet="Jackknife", includeLS=TRUE)
+pr2 <- predict(fit, newdata=newd, interval="confidence",
+               vcovMet="Jackknife")
+pr1$MALP
+pr2
+```
+
+Since only the variance differs between the prediction interval of
+LSLP amnd MALP, they are very close to each other:
+
+```{r}
+pr1$LSLP
+```
