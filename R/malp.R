@@ -42,8 +42,18 @@ print.malp <- function (x, ...)
     print(x, ...)
 }
 
+ccc <- function(x,y, type="Lin")
+{
+    type <- match.arg(type)
+    sx <- sd(x)
+    sy <- sd(y)
+    if (type=="Lin")
+        2*cor(x,y)*sx*sy/(sx^2+sy^2+(mean(x)-mean(y))^2)
+}
+
 predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
-                          interval = c("none", "confidence", "prediction"), level = 0.95,
+                          interval = c("none", "confidence", "prediction"),
+                          level = 0.95,
                           includeLS = FALSE, LSdfCorr = FALSE, 
                           vcovMet = c("Asymptotic", "Boot", "Jackknife"),
                           bootInterval=FALSE,
@@ -132,17 +142,21 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
         list(fit = pr2, se.fit = sigMA)
 }
 
-plot.malp <- function (x, y=NULL, includeLS=FALSE,
+plot.malp <- function (x, y=NULL, which=c("MALP", "LSLP", "Both"),
                        pch=21:22, col=2:3, bg=2:3, ...)
 {
+    which <- match.arg(which)
     yhat <- predict(x)
+    yhat2 <- predict(x$lm)
     y <- model.response(model.frame(x$lm))
-    plot(yhat, y, pch=pch[1], col=col[1], bg=bg[1], ...)
-    abline(1,1)
-    if (includeLS)
+    if (which %in% c("MALP", "Both"))
+        plot(y, yhat, pch=pch[1], col=col[1], bg=bg[1], ...)
+    else
+        plot(y, yhat2, pch=pch[2], col=col[2], bg=bg[2], ylab="yhat", ...)
+    abline(1,1, lty=2, lwd=2)
+    if (which == "Both")
     {
-        yhat2 <- predict(x, includeLS=TRUE)$LSLP
-        points(yhat2, y, pch=pch[2], col=col[2], bg=bg[2], ...)
+        points(y, yhat2, pch=pch[2], col=col[2], bg=bg[2], ...)
         legend("topleft", c("MALP","LSLP"), pch=pch, col=col,
                pt.bg=bg, bty='n', lty=NULL)
     }
@@ -171,22 +185,38 @@ vcov.malp <- function(object, method=c("Boot", "Jackknife"), B=400, ...)
 
 ## The summary.malp object and its methods
 
-summary.malp <- function(object, vcovMet=c("Boot", "Jackknife"), ...)
+.goodFit <- function(object, which=c("malp","lslp"))
+{
+    which <- match.arg(which)
+    y <- model.response(model.frame(object$lm))
+    yhat <- if (which == "malp") predict(object) else predict(object$lm)
+    CCC <- ccc(y, yhat)
+    PCC <- cor(y,yhat)
+    MSE <- mean((y-yhat)^2)
+    c(PCC=PCC, CCC=CCC, MSE=MSE)
+}
+
+
+summary.malp <- function(object, vcovMet=c("Boot", "Jackknife"),
+                         se=TRUE, ...)
 {
     vcovMet <- match.arg(vcovMet)
-    V <- vcov(object, method=vcovMet, ...)
-    se <- sqrt(diag(V))
-    b <- coef(object)
-    t <- b/se
-    pv <- 2*pnorm(-abs(t))
+    b <- coef(object)    
+    if (se)
+    {
+        V <- vcov(object, method=vcovMet, ...)
+        se <- sqrt(diag(V))
+        t <- b/se
+        pv <- 2*pnorm(-abs(t))
+    } else {
+        se <- t <- pv <- rep(NA, length(b))
+    }
     coefs <- cbind(b, se, t, pv)
     dimnames(coefs) <- list(names(b),
                             c("Estimate", "Std. Error", "t value", "Pr(>|t|)"))
-    yhat <- predict(object)
-    y <- model.response(model.frame(object$lm))
-    CCC <- 2*cov(y, yhat)/(var(yhat)+object$varY+(mean(yhat)-object$muY)^2)
-    PCC <- cor(y,yhat)
-    ans <- list(CCC=CCC, PCC=PCC, coefficients=coefs,
+    fm <- .goodFit(object, "malp")
+    fl <- .goodFit(object, "lslp")
+    ans <- list(fitMALP=fm, fitLSLP=fl, coefficients=coefs,
                 call=object$call)
     class(ans) <- "summary.malp"
     ans
@@ -197,11 +227,14 @@ print.summary.malp <- function(x, digits=5,
 {
     cat("\nCall:\n", paste(deparse(x$call), sep = "\n", collapse = "\n"), 
         "\n\n", sep = "")
+    if (all(is.na(x$coefficients[,2])))
+        cat("(Summary without standard errors)\n")
     cat("\nCoefficients:\n")
     printCoefmat(x$coefficients, digits = digits, signif.stars = signif.stars, 
                  na.print = "NA", ...)
-    cat("\nCCC: ", formatC(x$CCC, digits = digits), "\n", sep="")
-    cat("PCC: ", formatC(x$PCC, digits = digits), "\n", sep="")
+    cat("\nPCC: ", formatC(x$fitMALP["PCC"], digits = digits), "\n", sep="")
+    cat("CCC: ", formatC(x$fitMALP["CCC"], digits = digits), "\n", sep="")
+    cat("MSE: ", formatC(x$fitMALP["MSE"], digits = digits), "\n", sep="")
 }
 
 

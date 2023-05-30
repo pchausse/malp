@@ -537,27 +537,55 @@ method.</p>
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
+## PCC: 0.90811
 ## CCC: 0.90811
-## PCC: 0.90811</code></pre>
+## MSE: 1.2769</code></pre>
+<p>If we only want to see the value of the MSE, PCC and CCC, we can
+avoid computing the standard errors, which can be a problem for very
+large samples, by setting the argument <code>se</code> to
+<code>FALSE</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(s <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit, <span class="at">se=</span><span class="cn">FALSE</span>))</span></code></pre></div>
+<pre><code>## 
+## Call:
+## malp(formula = y ~ x, data = dat)
+## 
+## (Summary without standard errors)
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)   1.0396         NA      NA       NA
+## x             2.3261         NA      NA       NA
+## 
+## PCC: 0.90811
+## CCC: 0.90811
+## MSE: 1.2769</code></pre>
+<p>These “good fit” measures can also be exctracted from the
+<code>summary</code> output. It includes the measure for both MALP and
+LSLP</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cbind</span>(<span class="at">MALP=</span>s<span class="sc">$</span>fitMALP, <span class="at">LSLP=</span>s<span class="sc">$</span>fitLSLP)</span></code></pre></div>
+<pre><code>##          MALP      LSLP
+## PCC 0.9081066 0.9081066
+## CCC 0.9081066 0.9039040
+## MSE 1.2768623 1.2181947</code></pre>
 </div>
 <div id="the-predict-method" class="section level2">
 <h2>The <code>predict</code> method</h2>
 <p>The method works like the <code>predict.lm</code> method. By default,
 it predicts the dependent variables for the same values of the
 covariates used to fit the model.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>pr[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>pr[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
 <pre><code>##          1          2          3          4 
 ## -1.2382594 -0.9168157  2.6455775  1.1622700</code></pre>
 <p>In that case, it returns predicted values only. If the argument
 <code>se.fit</code> is set to <code>TRUE</code>, it returns a list with
 the element <code>fit</code> being the predicted values and the argument
 <code>se.fit</code> being the standard errors.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">se.fit=</span><span class="cn">TRUE</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">se.fit=</span><span class="cn">TRUE</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
 <pre><code>##          1          2          3          4 
 ## -1.2382594 -0.9168157  2.6455775  1.1622700</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
 <pre><code>##         1         2         3         4 
 ## 0.1472929 0.1391092 0.1328005 0.1137665</code></pre>
 <p>By default, the standard errors returned by <code>predict</code> are
@@ -567,8 +595,8 @@ expression from the Introduction section for <span class="math inline">\(\hat\si
 standard errors based on the <code>predict.lm</code> version <span class="math inline">\(\hat\sigma_\mathrm{LS}^{2(R)}(x_0)\)</span>, we
 set the argument <code>LSdfCorr</code> to <code>TRUE</code> (it stands
 for Least Squares degrees of freedom Correction).</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">se.fit=</span><span class="cn">TRUE</span>, <span class="at">LSdfCorr=</span><span class="cn">TRUE</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">se.fit=</span><span class="cn">TRUE</span>, <span class="at">LSdfCorr=</span><span class="cn">TRUE</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
 <pre><code>##         1         2         3         4 
 ## 0.1485435 0.1402261 0.1338114 0.1144386</code></pre>
 <p>If we are not willing to assume normality, we have the option of
@@ -579,8 +607,8 @@ computed with <code>vcov</code>. All we need to do is to set the
 argument <code>vcovMet</code> to either “Boot” or “Jackknife”. For the
 “Boot” option, the number of bootstrap sample is set by the argument
 <code>Bse.</code></p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">se.fit=</span><span class="cn">TRUE</span>, <span class="at">vcovMet=</span><span class="st">&quot;Boot&quot;</span>, <span class="at">Bse.=</span><span class="dv">100</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">se.fit=</span><span class="cn">TRUE</span>, <span class="at">vcovMet=</span><span class="st">&quot;Boot&quot;</span>, <span class="at">Bse.=</span><span class="dv">100</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>se.fit[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div>
 <pre><code>##         1         2         3         4 
 ## 0.1673680 0.1580201 0.1229206 0.1178964</code></pre>
 <p>If we want to predict <span class="math inline">\(Y\)</span> for
@@ -588,10 +616,16 @@ specific values of <span class="math inline">\(X\)</span>, we can pass
 the specific values to the argument <code>newdata</code> as a
 <code>data.frame</code>. The data.frame must contain values for all
 covariates in the formula.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>newd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">c</span>(<span class="sc">-</span>.<span class="dv">3</span>,.<span class="dv">3</span>,<span class="fl">1.5</span>))</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>newd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">c</span>(<span class="sc">-</span>.<span class="dv">3</span>,.<span class="dv">3</span>,<span class="fl">1.5</span>))</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd)</span></code></pre></div>
 <pre><code>##         1         2         3 
 ## 0.3417864 1.7374356 4.5287340</code></pre>
+<p>Note that the CCC can be computed manually using the <code>ccc</code>
+function included in the package. We first use predict to get the fitted
+values and then compute the CCC:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>yhat <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ccc</span>(y,yhat)</span></code></pre></div>
+<pre><code>## [1] 0.9081066</code></pre>
 </div>
 <div id="confidence-intervals" class="section level2">
 <h2>Confidence Intervals</h2>
@@ -600,8 +634,8 @@ covariates in the formula.</p>
 deserves its own section. By default, parametric confidence intervals
 are produced by setting the argument <code>interval</code> to
 “confidence”.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>pr</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>pr</span></code></pre></div>
 <pre><code>##         fit       lwr       upr
 ## 1 0.3417864 0.1127038 0.5708689
 ## 2 1.7374356 1.5068022 1.9680689
@@ -610,8 +644,8 @@ are produced by setting the argument <code>interval</code> to
 confidence intervals are explained in the previous section. For example,
 we can construct the intervals using the Jackknife standard errors this
 way:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>, <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>pr</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>, <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>pr</span></code></pre></div>
 <pre><code>##         fit       lwr       upr
 ## 1 0.3417864 0.1035505 0.5800222
 ## 2 1.7374356 1.5155789 1.9592922
@@ -643,24 +677,24 @@ a studentized interval.</p>
 intervals. The name of each element is the interval type. If
 <code>bootIntType</code> is not set to “all”, the function return a list
 of length equal to 1.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">bootInterval=</span><span class="cn">TRUE</span>, <span class="at">se.fit=</span><span class="cn">TRUE</span>,</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>norm</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">bootInterval=</span><span class="cn">TRUE</span>, <span class="at">se.fit=</span><span class="cn">TRUE</span>,</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>norm</span></code></pre></div>
 <pre><code>##            fit     lower    upper
 ## [1,] 0.7371137 0.1438565 1.249577
 ## [2,] 1.1866577 0.6047423 1.710968
 ## [3,] 2.0857456 1.0321086 3.128154</code></pre>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>stud</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>stud</span></code></pre></div>
 <pre><code>##            fit       lower    upper
 ## [1,] 0.7371137 -0.02094787 1.317056
 ## [2,] 1.1866577  0.68668149 1.971728
 ## [3,] 2.0857456  1.40123686 3.537060</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>bca</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>bca</span></code></pre></div>
 <pre><code>##            fit     lower    upper
 ## [1,] 0.7371137 0.3879852 1.639559
 ## [2,] 1.1866577 0.8716141 2.463950
 ## [3,] 2.0857456 1.5704609 4.553804</code></pre>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>perc</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>pr<span class="sc">$</span>perc</span></code></pre></div>
 <pre><code>##            fit     lower    upper
 ## [1,] 0.7371137 0.3773472 1.581598
 ## [2,] 1.1866577 0.8181034 1.809035
@@ -697,27 +731,37 @@ of freedom. Note that bootstrap intervals are not available for
 prediction intervals. For valid intervals in case of non-normality, we
 can set the argument <code>vcovMet</code> to either “Boot” or
 “Jackknife” to obtain a consistent estimator of <span class="math inline">\(\sigma^2_\mathrm{MA}(x_0)\)</span>.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>pr1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;prediction&quot;</span>,</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>, <span class="at">includeLS=</span><span class="cn">TRUE</span>)</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>pr2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>,</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>pr1<span class="sc">$</span>MALP</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>pr1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;prediction&quot;</span>,</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>, <span class="at">includeLS=</span><span class="cn">TRUE</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>pr2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit, <span class="at">newdata=</span>newd, <span class="at">interval=</span><span class="st">&quot;confidence&quot;</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">vcovMet=</span><span class="st">&quot;Jackknife&quot;</span>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>pr1<span class="sc">$</span>MALP</span></code></pre></div>
 <pre><code>##         fit        lwr      upr
 ## 1 0.3417864 -1.7847330 2.589588
 ## 2 1.7374356 -0.5156112 3.855263
 ## 3 4.5287340  2.0070874 6.402157</code></pre>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>pr2</span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>pr2</span></code></pre></div>
 <pre><code>##         fit       lwr       upr
 ## 1 0.3417864 0.1035505 0.5800222
 ## 2 1.7374356 1.5155789 1.9592922
 ## 3 4.5287340 4.2089752 4.8484927</code></pre>
 <p>Since only the variance differs between the prediction interval of
 LSLP amnd MALP, they are very close to each other:</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>pr1<span class="sc">$</span>LSLP</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>pr1<span class="sc">$</span>LSLP</span></code></pre></div>
 <pre><code>##         fit        lwr      upr
 ## 1 0.4024273 -1.7833582 2.588213
 ## 2 1.6698257 -0.5161263 3.855778
 ## 3 4.2046223  2.0000434 6.409201</code></pre>
+</div>
+<div id="the-plot-method" class="section level2">
+<h2>The <code>plot</code> method</h2>
+<p>This method produces a scatter plot of the dependent variable against
+the fitted values from the MALP, LSLP or both. A 45 degree line is added
+to better evaluate the level of agreement. The following shows one
+example with <code>which=&quot;MALP&quot;</code>. The other options are “LSLP” and
+“Both”.</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fit, <span class="at">which=</span><span class="st">&quot;MALP&quot;</span>, <span class="at">bg=</span><span class="cn">NA</span>, <span class="at">col=</span><span class="dv">1</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div class="footnotes footnotes-end-of-document">

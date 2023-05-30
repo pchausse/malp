@@ -191,6 +191,21 @@ has its own `print` method.
 print(summary(fit, "Boot", B=100), digits=5)
 ```
 
+If we only want to see the value of the MSE, PCC and CCC, we can avoid
+computing the standard errors, which can be a problem for very large
+samples, by setting the argument `se` to `FALSE`:
+
+```{r}
+(s <- summary(fit, se=FALSE))
+```
+
+These "good fit" measures can also be exctracted from the `summary`
+output. It includes the measure for both MALP and LSLP
+
+```{r}
+cbind(MALP=s$fitMALP, LSLP=s$fitLSLP)
+```
+
 ## The `predict` method
 
 The method works like the `predict.lm` method. By default, it predicts
@@ -249,6 +264,14 @@ newd <- data.frame(x=c(-.3,.3,1.5))
 predict(fit, newdata=newd)
 ```
 
+Note that the CCC can be computed manually using the `ccc` function
+included in the package. We first use predict to get the fitted values
+and then compute the CCC:
+
+```{r}
+yhat <- predict(fit)
+ccc(y,yhat)
+```
 
 ## Confidence Intervals
 
@@ -358,4 +381,16 @@ LSLP amnd MALP, they are very close to each other:
 
 ```{r}
 pr1$LSLP
+```
+
+## The `plot` method
+
+This method produces a scatter plot of the dependent variable against
+the fitted values from the MALP, LSLP or both. A 45 degree line is
+added to better evaluate the level of agreement. The following shows
+one example with `which="MALP"`. The other options are "LSLP" and
+"Both".
+
+```{r, fig.align='center'}
+plot(fit, which="MALP", bg=NA, col=1)
 ```

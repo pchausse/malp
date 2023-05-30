@@ -1,13 +1,13 @@
 importFrom(stats, model.frame, terms, model.response, lm, coef,
            predict, nobs, delete.response, model.matrix, vcov, pnorm,
            cor, cov, var, printCoefmat, fitted, update, qnorm, confint,
-           formula, lm.fit)
+           formula, lm.fit, sd)
 importFrom(sandwich, vcovHC)
 importFrom(graphics, abline, points, legend, grid)
 importFrom(boot, boot, boot.ci)
 importFrom(utils, tail)
 
-export(malp, predict.malp, vcov.malp, plot.malp, summary.malp)
+export(malp, predict.malp, vcov.malp, plot.malp, summary.malp, ccc)
  
 S3method(print, malp)
 S3method(coef, malp)
