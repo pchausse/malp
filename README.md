@@ -15,8 +15,7 @@ $$
 
 where $\gamma$ is the concordance correlation coefficient (CCC),
 $\mu_\mathrm{Y}$ is the population mean of Y and                                                                                                                                              
-$\tilde{Y}^\dagger(x)$ is the best linear predictor. For any predictor                                                                                                                        
-$\tilde{Y}$, the CCC is defined as 
+$\tilde{Y}^\dagger(x)$ is the best linear predictor. For any predictor $\tilde{Y}$, the CCC is defined as 
 
 $$ 
 \gamma = \frac{2\sigma\_{\mathrm{Y}\tilde{\mathrm{Y}}}}{
