@@ -44,11 +44,8 @@ $$
 \hat{Y}^\star(x_0) = \hat{\alpha}_1 + x_0'\hat{\alpha}_2\,,
 $$
 
-where $\hat{\alpha}_1=(1-1/\hat\gamma)\overline{\mathrm{Y}}+\hat\beta_1/\hat\gamma$,
-$\hat{\alpha}_2 = \hat{\beta}_2/\hat\gamma$, $\hat\beta_1$ and                                                                                                                                
-$\hat{\beta}_2$ are the least square estimators,
-$\overline{\mathrm{Y}}$ is the sample mean of Y and $\hat\gamma$ is
-the square root of the least square coefficient of determination.
+where $\hat{\alpha}_1=(1-1/\hat\gamma)\overline{\mathrm{Y}}+\hat\beta_1/\hat\gamma$, $\hat{\alpha}_2 = \hat{\beta}_2/\hat\gamma$, $\hat\beta_1$ and
+$\hat{\beta}_2$ are the least square estimators, $\overline{\mathrm{Y}}$ is the sample mean of Y and $\hat\gamma$ is the square root of the least square coefficient of determination.
 
 Example: Eye Data Set
 ---------------------
