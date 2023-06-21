@@ -15,11 +15,8 @@ where *γ* is the concordance correlation coefficient (CCC),
 *μ*<sub>*Y*</sub> is the population mean of Y and *Ỹ*<sup>†</sup>(*x*)
 is the best linear predictor. For any predictor *Ỹ*, the CCC is defined
 as
-
-$$
-\\gamma = \\frac{2\\sigma\_{\\mathrm{Y}\\tilde{\\mathrm{Y}}}}{
-\\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,,
-$$
+$$ \\gamma = \\frac{2\\sigma\_{\\mathrm{Y}\\tilde{\\mathrm{Y}}}}{
+\\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,.$$
 
 Let *X* = {1, *x*′}′ and let the best linear predictor
 *Ỹ*<sup>†</sup>(*x*) be *X*′*β* ≡ *β*<sub>1</sub> + *x*′*β*<sub>2</sub>,
@@ -27,6 +24,17 @@ where
 *β*<sub>1</sub> = *μ*<sub>*Y*</sub> − *μ*<sub>*x*</sub>′*β*<sub>2</sub>
 and $\\beta\_2=\\Var(X)^{-1}\\Cov(X,Y)$, then the MALP can be written
 as:
+
+$$
+\\begin{split}
+\\tilde{Y}^\\star(x)  = & 
+  \\left(1-1/\\gamma\\right)\\mu\_\\mathrm{Y}+ \\left( 1/\\gamma\\right) \\left\[X'\\beta\\right\]\\\\
+&=& \\left\[(1-1/\\gamma)\\mu\_\\mathrm{Y}+\\beta\_1/\\gamma\\right\] + 
+x'\[\\beta\_2/\\gamma\] \\\\
+&\\equiv  \\alpha\_1 + x'\\alpha\_2\\\\
+&\\equiv  X'\\alpha
+\\end{split}
+$$
 
 Assuming we have an IID sample {*Y*<sub>*i*</sub>, *x*<sub>*i*</sub>} of
 size *n*, a consistent estimator of the MALP at *x* = *x*<sub>0</sub>
@@ -57,22 +65,51 @@ CCC-based conversion function from the Cirrus OCT to the Stratus OCT.
 In the data set, both OCTs were measured from 46 subjects, i.e., 92
 eyes, but only 61% of these observations were selected based on the
 reliability of the OCTs (signal strength ≥ 6 for both approaches). This
-subset of the original dataset is included in the package. The following
-is the scatter plot of Stratus OCT against Cirrus OCT.
+subset of the original dataset is included in the package. To avoid the
+problem of correlation between observations, we only illustrate the
+method using right eye observations.
 
 ``` r
 library(malp)
 data(eye)
-plot(Stratus~Cirrus, eye, xlab="Cirrus OCT", ylab="Stratus OCT",
-     main="Penal A: Scatter Plot with Raw Data",
-     xlim=c(125,325), ylim=c(125,325))
-abline(1,1, lty=2)
-abline(lm(Stratus~Cirrus, eye), lty=3, col=2)
-legend("topleft", c("45 degree line", "LSLP"), col=1:2, lty=c(2,3),
-       bty='n')
+eye <- subset(eye, Eye=="OD")
 ```
 
-<img src="README_files/figure-markdown_github/eye1-1.png" width="50%" />
+We first compare the least squares the malp estimates:
+
+``` r
+fit <- lm(Stratus~Cirrus, eye)
+mfit <- malp(Stratus~Cirrus, eye)
+knitr::kable(summary(fit)$coef, caption="Least Squares")
+```
+
+|             |    Estimate|  Std. Error|   t value|  Pr(\>\|t\|)|
+|:------------|-----------:|-----------:|---------:|------------:|
+| (Intercept) |  63.5089313|  21.7767222|  2.916368|    0.0069012|
+| Cirrus      |   0.5090726|   0.0843545|  6.034919|    0.0000017|
+
+``` r
+knitr::kable(summary(mfit)$coef, caption="MALP")
+```
+
+|             |   Estimate|  Std. Error|    t value|  Pr(\>\|t\|)|
+|:------------|----------:|-----------:|----------:|------------:|
+| (Intercept) |  20.473627|   27.545111|  0.7432763|    0.4573144|
+| Cirrus      |   0.677048|    0.112611|  6.0122742|    0.0000000|
+
+The CCC for the LSLP is equal to 0.7223338, and it is equal to 0.7519003
+for MALP. As expected, the CCC is higher for MALP since it maximizes it.
+We can compare the two fitted lines:
+
+``` r
+plot(Stratus~Cirrus, eye, xlab="Cirrus", ylab="Stratus",
+     main="OD: MALP vs LSLP", xlim=c(125,325), ylim=c(100,300))
+abline(mfit, lty=1, col="blue")
+abline(mfit$lm, lty=2, col="red")
+abline(1,1,lty=3)
+```
+
+<img src="README_files/figure-markdown_github/eyeplot-1.png" width="60%" style="display: block; margin: auto;" />
 
 References
 ==========
