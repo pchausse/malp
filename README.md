@@ -15,8 +15,11 @@ where *γ* is the concordance correlation coefficient (CCC),
 *μ*<sub>*Y*</sub> is the population mean of Y and *Ỹ*<sup>†</sup>(*x*)
 is the best linear predictor. For any predictor *Ỹ*, the CCC is defined
 as
-$$ \\gamma = \\frac{2\\sigma\_{\\mathrm{Y}\\tilde{\\mathrm{Y}}}}{
-\\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,.$$
+
+$$ 
+\\gamma = \\frac{2\\sigma\_{\\mathrm{Y}\\tilde{\\mathrm{Y}}}}{
+\\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,.
+$$
 
 Let *X* = {1, *x*′}′ and let the best linear predictor
 *Ỹ*<sup>†</sup>(*x*) be *X*′*β* ≡ *β*<sub>1</sub> + *x*′*β*<sub>2</sub>,
@@ -29,7 +32,7 @@ $$
 \\begin{split}
 \\tilde{Y}^\\star(x)  = & 
   \\left(1-1/\\gamma\\right)\\mu\_\\mathrm{Y}+ \\left( 1/\\gamma\\right) \\left\[X'\\beta\\right\]\\\\
-&=& \\left\[(1-1/\\gamma)\\mu\_\\mathrm{Y}+\\beta\_1/\\gamma\\right\] + 
+= & \\left\[(1-1/\\gamma)\\mu\_\\mathrm{Y}+\\beta\_1/\\gamma\\right\] + 
 x'\[\\beta\_2/\\gamma\] \\\\
 &\\equiv  \\alpha\_1 + x'\\alpha\_2\\\\
 &\\equiv  X'\\alpha
