@@ -9,7 +9,9 @@ predictor that maximizes the concordance correlation coefficient.
 Suppose we have a *p* × 1 vector of covariates *x* and a dependent
 variable *Y*. The MALP predictor is:
 
-*Ỹ*<sup>⋆</sup>(*x*) = (1−1/*γ*)*μ*<sub>*Y*</sub> + (1/*γ*)*Ỹ*<sup>†</sup>(*x*) ,
+$$
+\tilde{Y}^\star(x) = \left(1-1/\gamma\right)\mu_\mathrm{Y}+ \left( 1/\gamma\right) \tilde{Y}^\dagger(x)\,,
+$$
 
 where *γ* is the concordance correlation coefficient (CCC),
 *μ*<sub>*Y*</sub> is the population mean of Y and *Ỹ*<sup>†</sup>(*x*)
