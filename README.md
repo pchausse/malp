@@ -23,10 +23,10 @@ $$
 \\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,.
 $$
 
-Let $X=\{1,x'\}'$ and let the best linear predictor
+Let $X={1,x'}'$ and let the best linear predictor
 $\tilde{Y}^\dagger(x)$ be $X'\beta\equiv \beta_1+x'\beta_2$, where
 $\beta_1=\mu_\mathrm{Y}-\mu_\mathrm{x}'\beta_2$ and
-$\beta_2=\Var(X)^{-1}\Cov(X,Y)$, then the MALP can be written as:
+$\beta_2=Var(X)^{-1}Cov(X,Y)$, then the MALP can be written as:
 
 $$
 \\begin{split}
