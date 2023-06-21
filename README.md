@@ -107,7 +107,7 @@ abline(mfit$lm, lty=2, col="red")
 abline(1,1,lty=3)
 ```
 
-<img src="README_files/figure-markdown_github/eyeplot-1.png" width="60%" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/eyeplot.png" width="60%" style="display: block; margin: auto;" />
 
 References
 ==========
