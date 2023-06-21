@@ -19,8 +19,8 @@ $\tilde{Y}^\dagger(x)$ is the best linear predictor. For any predictor
 $\tilde{Y}$, the CCC is defined as 
 
 $$ 
-\\gamma = \\frac{2\\sigma\_{\\mathrm{Y}\\tilde{\\mathrm{Y}}}}{
-\\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,.
+\gamma = \frac{2\sigma\_{\mathrm{Y}\tilde{\mathrm{Y}}}}{
+\sigma^2\_\mathrm{Y}+\sigma^2\_{\tilde{\mathrm{Y}}}+(\mu\_\mathrm{Y}-\mu\_{\tilde{\mathrm{Y}}})}\\,.
 $$
 
 Let $X={1,x'}'$ and let the best linear predictor
@@ -29,14 +29,14 @@ $\beta_1=\mu_\mathrm{Y}-\mu_\mathrm{x}'\beta_2$ and
 $\beta_2=Var(X)^{-1}Cov(X,Y)$, then the MALP can be written as:
 
 $$
-\\begin{split}
-\\tilde{Y}^\\star(x)  = & 
-  \\left(1-1/\\gamma\\right)\\mu\_\\mathrm{Y}+ \\left( 1/\\gamma\\right) \\left\[X'\\beta\\right\]\\\\
-= & \\left\[(1-1/\\gamma)\\mu\_\\mathrm{Y}+\\beta\_1/\\gamma\\right\] + 
-x'\[\\beta\_2/\\gamma\] \\\\
-\\equiv &  \\alpha\_1 + x'\\alpha\_2\\\\
-\\equiv &  X'\\alpha
-\\end{split}
+\begin{split}
+\tilde{Y}^\star(x)  = & 
+  \left(1-1/\gamma\right)\mu\_\mathrm{Y}+ \left( 1/\gamma\right) \left\[X'\beta\right\]\\
+= & \left\[(1-1/\gamma)\mu\_\mathrm{Y}+\beta\_1/\gamma\right\] + 
+x'\[\beta\_2/\gamma\] \\
+\equiv &  \alpha\_1 + x'\alpha\_2\\
+\equiv &  X'\alpha
+\end{split}
 $$
 
 Assuming we have an IID sample $\{Y_i,x_i\}$ of size $n$, a consistent estimator of the MALP at $x=x_0$ is:
