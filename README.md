@@ -1,7 +1,88 @@
 [![R-CMD-check](https://github.com/pchausse/malp/workflows/R-CMD-check/badge.svg)](https://github.com/pchausse/malp/actions)
 
-# Maximum Agreement Linear Predictor
+Maximum Agreement Linear Predictor
+==================================
 
-This is a preliminary version of the R package *malp*. More details will be added shortly.
+The `malp` package implements the maximum linear prediction (MALP)
+developped by Kim et al. (2023). The MALP is defined as the linear
+predictor that maximizes the concordance correlation coefficient.
+Suppose we have a *p* × 1 vector of covariates *x* and a dependent
+variable *Y*. The MALP predictor is:
 
+*Ỹ*<sup>⋆</sup>(*x*) = (1−1/*γ*)*μ*<sub>*Y*</sub> + (1/*γ*)*Ỹ*<sup>†</sup>(*x*) ,
 
+where *γ* is the concordance correlation coefficient (CCC),
+*μ*<sub>*Y*</sub> is the population mean of Y and *Ỹ*<sup>†</sup>(*x*)
+is the best linear predictor. For any predictor *Ỹ*, the CCC is defined
+as
+
+$$
+\\gamma = \\frac{2\\sigma\_{\\mathrm{Y}\\tilde{\\mathrm{Y}}}}{
+\\sigma^2\_\\mathrm{Y}+\\sigma^2\_{\\tilde{\\mathrm{Y}}}+(\\mu\_\\mathrm{Y}-\\mu\_{\\tilde{\\mathrm{Y}}})}\\,,
+$$
+
+Let *X* = {1, *x*′}′ and let the best linear predictor
+*Ỹ*<sup>†</sup>(*x*) be *X*′*β* ≡ *β*<sub>1</sub> + *x*′*β*<sub>2</sub>,
+where
+*β*<sub>1</sub> = *μ*<sub>*Y*</sub> − *μ*<sub>*x*</sub>′*β*<sub>2</sub>
+and $\\beta\_2=\\Var(X)^{-1}\\Cov(X,Y)$, then the MALP can be written
+as:
+
+Assuming we have an IID sample {*Y*<sub>*i*</sub>, *x*<sub>*i*</sub>} of
+size *n*, a consistent estimator of the MALP at *x* = *x*<sub>0</sub>
+is:
+
+*Ŷ*<sup>⋆</sup>(*x*<sub>0</sub>) = *α̂*<sub>1</sub> + *x*<sub>0</sub>′*α̂*<sub>2</sub> 
+
+where
+$\\hat{\\alpha}\_1=(1-1/\\hat\\gamma)\\overline{\\mathrm{Y}}+\\hat\\beta\_1/\\hat\\gamma$,
+*α̂*<sub>2</sub> = *β̂*<sub>2</sub>/*γ̂*, *β̂*<sub>1</sub> and
+*β̂*<sub>2</sub> are the least square estimators,
+$\\overline{\\mathrm{Y}}$ is the sample mean of Y and *γ̂* is the square
+root of the least square coefficient of determination.
+
+Example: Eye Data Set
+---------------------
+
+In opthalmology, the central subfield macular thickness (CSMT)
+measurements can be obtained by optical coherence tomography (OCT).
+Abedi et al. (2011) focused on two types of OCT: time-domain Stratus
+OCT, the most widely used model prior to 2006; and spectral-domain
+Cirrus OCT, a more advanced model. As Cirrus OCT replaces Stratus OCT as
+a marker, the agreement between the measurements from two methods is of
+interest to researchers in the field. For this purpose, Abedi et al.
+(2011) provided a comparison between the two approaches and obtained a
+CCC-based conversion function from the Cirrus OCT to the Stratus OCT.
+
+In the data set, both OCTs were measured from 46 subjects, i.e., 92
+eyes, but only 61% of these observations were selected based on the
+reliability of the OCTs (signal strength ≥ 6 for both approaches). This
+subset of the original dataset is included in the package. The following
+is the scatter plot of Stratus OCT against Cirrus OCT.
+
+``` r
+library(malp)
+data(eye)
+plot(Stratus~Cirrus, eye, xlab="Cirrus OCT", ylab="Stratus OCT",
+     main="Penal A: Scatter Plot with Raw Data",
+     xlim=c(125,325), ylim=c(125,325))
+abline(1,1, lty=2)
+abline(lm(Stratus~Cirrus, eye), lty=3, col=2)
+legend("topleft", c("45 degree line", "LSLP"), col=1:2, lty=c(2,3),
+       bty='n')
+```
+
+<img src="README_files/figure-markdown_github/eye1-1.png" width="50%" />
+
+References
+==========
+
+Abedi, Gelareh, Payal Patal, Gheorghe Doros, and Manju L Subramanian.
+2011. “Transitioning from Stratus OCT to Cirrus OCT: A Comparison and a
+Proposed Equation to Convert Central Subfield Macular Thickness
+Measurements in Healthy Subjects.” *Graefe’s Archive for Clinical and
+Experimental Ophthalmology* 249 (9): 1353–7.
+
+Kim, Taeho, George Luta, Matteo Bottai, Pierre Chausse, Gheorghe Doros,
+and Edsel A. Pena. 2023. “Maximum Agreement Linear Prediction via the
+Concordance Correlation Coefficient.” <http://arxiv.org/abs/2304.04221>.
