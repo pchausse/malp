@@ -1,0 +1,339 @@
+---
+title: "The Maximum Agreement Prediction via the Concordance Correlation Coefficient: Applications"
+author: "Taeho Kim^[Lehigh University, tak422@lehigh.edu], George Luta^[Georgetown University, George.Luta@georgetown.edu], Matteo Bottai^[Karolinska Institutet, matteo.bottai@ki.se], Pierre Chausse^[University of Waterloo, pchausse@uwaterloo.ca], Gheorghe Doros^[Boston University,, doros@bu.edu], Edsel A. Pena^[University of South Carolina, pena@stat.sc.edu]"
+date: ""
+bibliography: malp.bib 
+output:
+ pdf_document:
+  number_sections: true
+abstract: "This vignette reproduces the applications included in @kim2023. For more details on how to use the package, see the other vignette."
+vignette: >
+  %\VignetteIndexEntry{The Maximum Agreement Prediction via the Concordance Correlation Coefficient: Applications}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteDepends{malp}
+  %\VignettePackage{malp}
+  %\VignetteEncoding{UTF-8}
+header-includes:
+- \newcommand{\trp}{^{\tt T}}
+- \DeclareMathOperator{\tr}{tr}
+- \newcommand{\trace}{\mbox{\rm\bf tr}}
+- \DeclareMathOperator*{\argmax}{arg\,max}
+- \DeclareMathOperator*{\argmin}{arg\,min}
+- \newcommand{\E}{\mathrm{E}}
+- \newcommand{\Var}{\mathrm{Var}}
+- \newcommand{\Cov}{\mathrm{Cov}}
+- \newcommand{\Cor}{\mathrm{Cor}}
+- \newcommand{\CCC}{\mathrm{CCC}}
+- \newcommand{\PCC}{\mathrm{PCC}}
+- \newcommand{\MSE}{\mathrm{MSE}}
+- \newcommand{\bs}{\boldsymbol} 
+---
+
+```{r, echo=FALSE}
+library(kableExtra)
+```
+
+# Eye Data Set
+
+In opthalmology, the central subfield macular thickness (CSMT) mea-
+surements can be obtained by optical coherence tomography
+(OCT). @APDS:2011 focused on two types of OCT: time-domain Stratus
+OCT, the most widely used model prior to 2006; and spectral-domain
+Cirrus OCT, a more advanced model. As Cirrus OCT replaces Stratus OCT
+as a marker, the agreement between the measurements from two methods
+is of interest to researchers in the field. For this purpose,
+@APDS:2011 provided a comparison between the two approaches and
+obtained a CCC-based conversion function from the Cirrus OCT to the
+Stratus OCT.
+
+In the data set, both OCTs were measured from 46 subjects, i.e., 92
+eyes, but only 61\% of these observations were selected based on the
+reliability of the OCTs (signal strength $\geq$ 6 for both
+approaches). This subset of the original dataset is included in te
+package:
+
+```{r}
+library(malp)
+data(eye)
+```
+
+We can reproduce Figure 12 by first transforming the data:
+
+```{r}
+Cirrus2 <- eye$Cirrus - 60
+Cirrus3 <- 0.76*eye$Cirrus - 0.51
+```
+
+We can verify that we obtain the same concordance correlation
+coefficients as in the paper:
+
+```{r}
+rho <- cor(eye$Stratus, eye$Cirrus)
+rhoc <- c(ccc(eye$Stratus, eye$Cirrus),
+          ccc(eye$Stratus, Cirrus2),
+          ccc(eye$Stratus, Cirrus3))
+res <- cbind(PCC=rho, CCC=rhoc)
+rownames(res) <- c("Raw", "Transform 1" , "Transform 2")
+knitr::kable(res)
+```
+
+We can then reproduce Figure 12:
+
+```{r, fig.show='hold', out.width='50%', fig.height=6, fig.width=6}
+plot(Stratus~Cirrus, eye, xlab="Cirrus OCT", ylab="Stratus OCT",
+     main="Penal A: Scatter Plot with Raw Data",
+     xlim=c(125,325), ylim=c(125,325))
+abline(1,1, lty=2)
+plot(Stratus~Cirrus2, eye, xlab="Transformed Cirrus OCT",
+     ylab="Stratus OCT", pch=22, xlim=c(125,325), ylim=c(125,325),
+     main="Penal A: Scatter Plot with Transformed Data")
+points(Cirrus3, eye$Stratus,pch=24, col=2)
+abline(1,1, lty=2)
+legend("topleft", c("Y=X-60","Y=0.76X-0.51"), col=1:2, pch=c(22,24),
+       bty='n')
+```
+
+To produce Figure 13, we use the package to obtain the fitted lines
+for both MALP and LSLP:
+
+```{r, fig.show='hold', out.width='50%', fig.height=6, fig.width=6}
+eyeOD <- subset(eye, Eye=="OD")
+eyeOS <- subset(eye, Eye=="OS")
+fitOD <- malp(Stratus~Cirrus, eyeOD)
+plot(Stratus~Cirrus, eyeOS, xlab="Cirrus", ylab="Stratus",
+     main="OD: MALP vs LSLP", xlim=c(125,325), ylim=c(100,300))
+abline(fitOD, lty=1, col="blue")
+abline(fitOD$lm, lty=2, col="red")
+legend("topleft", c("MALP","LSLP"), col=c("blue","red"), lty=1:2,bty='n')
+fitOS <- malp(Stratus~Cirrus, eyeOS)
+plot(Stratus~Cirrus, eyeOS, xlab="Cirrus", ylab="Stratus",
+     main="OS: MALP vs LSLP", xlim=c(125,325), ylim=c(100,300))
+abline(fitOS, lty=1, col="blue")
+abline(fitOS$lm, lty=2, col="red")
+legend("topleft", c("MALP","LSLP"), col=c("blue","red"), lty=1:2,bty='n')
+```
+
+We reproduce here the method to generate Table 3. The first function
+is to compute alll summary statistics needed (PCC, CCC and MSE):
+
+```{r}
+## Realistic
+getStat <- function(obj, newD)
+{
+    pr <- predict(obj, newdata=newD,includeLS=TRUE)
+    malp <- c(cor(newD$Stratus, pr$MALP),
+              ccc(newD$Stratus, pr$MALP),
+              mean((newD$Stratus-pr$MALP)^2))
+    lslp <- c(cor(newD$Stratus, pr$LSLP),
+              ccc(newD$Stratus, pr$LSLP),
+              mean((newD$Stratus-pr$LSLP)^2))
+    c(malp, lslp)    
+}
+```
+
+The next function resample the data with replacement, splits the new
+sample in two, use the first half to estimate the model and the second
+half to compute the different statistics.
+
+```{r}
+geti <- function(dat)
+{
+    n <- nrow(dat)
+    dat <- dat[sample(n, replace=TRUE),]
+    dat1 <- dat[1:floor(n/2),]
+    dat2 <- dat[-(1:floor(n/2)),]    
+    fit <- malp(Stratus~Cirrus, dat1)
+    getStat(fit, dat2)
+}
+```
+
+The following is the bootstrap simulation for a given seed. It only
+runs if the simulation file "eyeSim.rda" is not on the current
+directory. 
+
+```{r}
+if (any(list.files("./") == "eyeSim.rda"))
+{
+    load("eyeSim.rda")
+} else {
+    set.seed(12052023)
+    OS <- sapply(1:2000, function(i) geti(eyeOS))
+    OD <- sapply(1:2000, function(i) geti(eyeOD))
+    OS <- matrix(rowMeans(OS), ncol=2)
+    OD <- matrix(rowMeans(OD), ncol=2)
+    save(OD,OS,file="eyeSim.rda")
+}
+```
+
+Finally, the following computes the results for what we refer to the
+"Illustrative" case, and combine all results in one table.
+
+```{r}
+OSi <- matrix(getStat(fitOS, eyeOS), ncol=2)
+ODi <- matrix(getStat(fitOD, eyeOD), ncol=2)
+res <- cbind(OSi, ODi, OS, OD)
+colnames(res) <- rep(c("MALP", "LSLP"),4)
+rownames(res) <- c("PCC","CCC","MSE")
+```
+
+```{r, echo=FALSE, results='asis'}
+t1 <- kbl(res, format="latex", digits=3)
+t2 <- add_header_above(t1, c(" ", "OS" = 2, "OD" = 2, "OS" = 2, "OD" = 2))
+add_header_above(t2, c(" ", "Illustrative Case" = 4, "Realistic Case" = 4)) 
+```
+
+For Figure 14, we first estimate the model with all observations. We
+see that the coefficients are as shown in the paper.
+
+```{r}
+fit <- malp(Stratus~Cirrus, eye)
+coef(fit)
+```
+
+To plot the confidence interval, we use the `predict` function and a
+grid of new Cirrus measures. In Figure 14, all standard errors are
+based on the asymptotic properties under normality.  `matplot` is used
+to directly plot all lines from the `predict` output. For the
+prediction intervals, we only plot the lower and upper bounds, which
+correspond to the second and third row.
+
+```{r, out.width='70%', fig.align='center'}
+cir <- seq(120, 380, length.out=40)
+pr <- predict(fit, newdata=data.frame(Cirrus=cir), interval="confidence",
+              includeLS=TRUE)
+pr2 <- predict(fit, newdata=data.frame(Cirrus=cir), interval="prediction",
+              includeLS=TRUE)
+plot(Stratus~Cirrus, eye, ylim=c(130,260),
+     main="MALP with a 95% CI & prediction by Abedi's formula")
+matplot(cir, pr$MALP, type='l',lty=c(1,2,2), col=c("blue", "gray", "gray"),
+        add=TRUE)
+matplot(cir, pr2$MALP[,-1], type='l',lty=3, col="green", add=TRUE)
+matplot(cir, pr2$LSLP[,-1], type='l',lty=4, col="purple",add=TRUE)
+abline(-.51, .76, col="red")
+legend("topleft", c("MALP","Abedi","MALP CI", "MALP PI", "LSLP PI"),
+       col=c("blue","red","gray","green","purple"), lty=c(1,1,2,3,4),
+       bty='n', cex=.7)
+```
+
+# The BodyFat Data set
+
+The percentage of bodyfat is an important bodily characteristic that
+serves as a marker for the health status of an individual. Being able
+to infer it from easily-measured or determined bodily characteristics,
+such as age, weight, height, circumference measurements, or skin-fold
+measurements is therefore of interest, e.g., @BW:1974, @KW:1977. For
+example, one could obtain the percent bodyfat from body density via
+underwater weighting based on Siri's equation $100\times
+\text{Bodyfat}= 495/\text{BodyDensity}-450$ as in
+@Siri:1956. Including body density (BD) and percent bodyfat
+(PBF), the data set of interest contains 13 additional variables such
+as age (years), weight (WGT, in pounds), height (HGT, in inches);
+several body circumference measurements (in cm): neck (NCK), chest
+(CST), abdomen (ABD), hip, thigh (TGH), knee (KN), ankle (ANK), biceps
+(BCP), forearm (FA), and wrist (WRT) for 252 men. The data set was
+originally in @Pen:1985 and became available to the public by
+courtesy of Dr.\ A.\ Garth Fisher.
+
+The dataset is included in the package and can be loaded as follows:
+
+```{r}
+data(bodyFat)
+```
+
+## Table 4
+
+The table only returns the PCC between the different variables
+included in the dataset.
+
+```{r, message=FALSE, results='asis'}
+library(xtable)
+corDat <- cor(bodyFat)
+print(xtable(corDat, digits=2), floating=FALSE,size='small',
+      hline=c(-1,-1,0,nrow(corDat),nrow(corDat)), comment=FALSE) 
+```
+
+## Table 6
+
+First, we estimate the five models represented by Table 5. 
+
+```{r}
+fit1 <- malp(PBF~ABD, bodyFat)
+fit2 <- malp(PBF~ABD+WGT, bodyFat)
+fit3 <- malp(PBF~ABD+WGT+FA+WRT, bodyFat)
+fit4 <- malp(PBF~ABD+WGT+FA+WRT+Age+TGH, bodyFat)
+fit5 <- malp(PBF~ABD+WGT+FA+WRT+Age+TGH+NCK+Hip, bodyFat)
+```
+
+We then organize the result in a table. The `summary` method with
+`se=FALSE` is used to compute the CCC, PCC and MSE.
+
+```{r, results='asis', results='asis'}
+res <- lapply(1:5, function(i) {
+    f <- get(paste("fit",i,sep=""))
+    ans <- matrix(NA, 9+3, 2)
+    s <- summary(f, se=FALSE)
+    ans[1:length(coef(f)),] <- cbind(coef(f), coef(f$lm))
+    ans[10:12,] <- cbind(s$fitMALP, s$fitLSLP)
+    ans
+    })
+res <- do.call("cbind", res)
+rownames(res) <- c(names(coef(fit5)), names(summary(fit5,se=FALSE)$fitMALP))
+```
+
+```{r, echo=FALSE, results='asis'}
+options(knitr.kable.NA = '')
+t1 <- kbl(res, format="latex", digits=3)
+t2 <- add_header_above(t1, c(" ", rep(c("MALP","LSLP"), 5)))
+add_header_above(t2, c(" ", "A"=2, "B"=2, "C"=2, "D"=2, "E"=2))
+```
+
+## Figure 15
+
+We can use the info from the above table to produce the graph. But,
+instead of having the MSE and CCC on the same graph, which requires
+two different y-axes, we plot them separately.
+
+```{r, out.width='50%', fig.show='hold'}
+id <- seq(1,9,by=2)
+plot(1:5, res["PCC",id], xaxt='n', main="Prediction Performance",
+     xlab="Variable Subsets", ylab="CCC", ylim=c(.78,.88),
+     type='l', lwd=3, col=gray(.2,.5))
+axis(1, at=1:5, labels=LETTERS[1:5])
+lines(1:5, res["CCC",id], col="blue", lty=2)
+lines(1:5, res["CCC",id+1], col="red", lty=3)
+legend("topleft", c("PCC","CCC:MALP","CCC:LSLP"),
+       lty=c(1:3), col=c(gray(.2,.5),"blue","red"), cex=.75,
+       bty='n')
+plot(1:5, res["MSE",id], xaxt='n', main="Prediction Performance",
+     xlab="Variable Subsets", ylab="MSE", ylim=range(res["MSE",]),
+     type='l', lty=4, col="blue")
+axis(1, at=1:5, labels=LETTERS[1:5])
+lines(1:5, res["MSE",id+1], col="red", lty=5)
+legend("topright", c("MSE:MALP","MSE:LSLP"),
+       lty=c(4:5), col=c("blue","red"), cex=.75, bty='n')
+```
+
+
+## Figure 16
+
+We can use the `plot` method form the package to produce all
+scatterplots.
+
+```{r, out.width='50%', fig.show='hold'}
+plot(fit1, which="MALP", main="MALP: Subset A")
+plot(fit1, which="LSLP", main="LSLP: Subset A")
+plot(fit2, which="MALP", main="MALP: Subset B")
+plot(fit2, which="LSLP", main="LSLP: Subset B")
+plot(fit3, which="MALP", main="MALP: Subset C")
+plot(fit3, which="LSLP", main="LSLP: Subset C")
+plot(fit4, which="MALP", main="MALP: Subset D")
+plot(fit4, which="LSLP", main="LSLP: Subset D")
+plot(fit5, which="MALP", main="MALP: Subset E")
+plot(fit5, which="LSLP", main="LSLP: Subset E")
+```
+
+# References
+
+
+
+
