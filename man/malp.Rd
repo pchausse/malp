@@ -20,4 +20,4 @@ malp(formula, data, obj=TRUE)
 }
 
 
-\keyword{agreement, predictor}
+\keyword{agreement predictor}
