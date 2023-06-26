@@ -1,6 +1,6 @@
 Package: malp
 Version: 0.1-0
-Date: 2023-06-25
+Date: 2023-06-26
 Title: Maximum Agreement Linear Prediction
 Authors@R: c(person(given="Pierre", family="Chausse", role=c("aut","cre"),
 	   	    email="pchausse@uwaterloo.ca"),
