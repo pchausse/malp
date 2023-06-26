@@ -1,6 +1,6 @@
 Package: malp
 Version: 0.1-0
-Date: 2023-03-24
+Date: 2023-06-25
 Title: Maximum Agreement Linear Prediction
 Authors@R: c(person(given="Pierre", family="Chausse", role=c("aut","cre"),
 	   	    email="pchausse@uwaterloo.ca"),
@@ -15,7 +15,7 @@ Authors@R: c(person(given="Pierre", family="Chausse", role=c("aut","cre"),
 	     person(given="George", family="Luta", role = "ctb",
 	             email = "George.Luta@georgetown.edu"))
 Depends: R (>= 4.0.0)
-Suggests: knitr, rmarkdown
+Suggests: knitr, rmarkdown, xtable, kableExtra
 Description:  Tools for inference on the maximum agreement linear predictor vias the Concordance Correlation Coefficient.
 License: GPL (>= 2)
 Imports: stats, sandwich, graphics, boot
