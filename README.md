@@ -120,4 +120,4 @@ Experimental Ophthalmology* 249 (9): 1353–7.
 
 Kim, Taeho, George Luta, Matteo Bottai, Pierre Chausse, Gheorghe Doros,
 and Edsel A. Pena. 2023. “Maximum Agreement Linear Prediction via the
-Concordance Correlation Coefficient.” <http://arxiv.org/abs/2304.04221>.
+Concordance Correlation Coefficient.” <https://arxiv.org/abs/2304.04221>.
