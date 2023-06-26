@@ -11,6 +11,8 @@ vignette: >
   %\VignetteIndexEntry{The Maximum Agreement Prediction via the Concordance Correlation Coefficient: Applications}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteDepends{malp}
+  %\VignetteDepends{kableExtra}
+  %\VignetteDepends{xtable}
   %\VignettePackage{malp}
   %\VignetteEncoding{UTF-8}
 header-includes:
