@@ -37,7 +37,7 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
-          r_build_args: '--compact-vignettes="both"'
+          r_build_args: '--compact-vignettes=both'
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
