@@ -1,4 +1,6 @@
-
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/pchausse/malp/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pchausse/malp/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
 Maximum Agreement Linear Predictor
 ==================================
