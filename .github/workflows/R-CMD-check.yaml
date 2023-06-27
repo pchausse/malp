@@ -46,5 +46,5 @@ jobs:
       - uses: r-lib/actions/setup-tinytex@v2
       - uses: r-lib/actions/check-r-package@v2
         with:
-          r_build_args: --as-cran --no-manual --compact-vignettes=both
+          r_build_args: "--compact-vignettes=both"
           upload-snapshots: true
