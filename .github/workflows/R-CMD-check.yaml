@@ -37,7 +37,6 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
-          r_build_args: '--compact-vignettes=both'
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
@@ -47,4 +46,5 @@ jobs:
       - uses: r-lib/actions/setup-tinytex@v2
       - uses: r-lib/actions/check-r-package@v2
         with:
+          r_build_args: 'c("--as-cran", "--no-manual", "--compact-vignettes=both")'
           upload-snapshots: true
