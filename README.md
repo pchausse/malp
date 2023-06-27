@@ -1,4 +1,4 @@
-[![R-CMD-check](https://github.com/pchausse/malp/workflows/R-CMD-check/badge.svg)](https://github.com/pchausse/malp/actions)
+
 
 Maximum Agreement Linear Predictor
 ==================================
