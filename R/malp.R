@@ -254,7 +254,7 @@ bootMALP <- function (object, newdata = NULL, B=300, Bse=100, se.fit=FALSE,
         pr <- predict(fitB, newdata=newdata., se.fit=se.fit.,
                       vcovMet=vcovMet., Bse.=Bse.)
         if (se.fit.)
-            c(pr$fit, pr$se.fit)
+            c(pr$fit, pr$se.fit^2)
         else pr
     }
     res <- boot(object$data, .bootPr, R=B, newdata.=newdata, vcovMet.=vcovMet,
