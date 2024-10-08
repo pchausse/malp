@@ -190,7 +190,7 @@ vcov.malp <- function(object, method=c("Asymptotic", "Boot", "Jackknife"), B=400
         V11 <- 2*sig2/(n*(1+g))*dfC1 - tmp*Ybar0^2 + sum(tmp2*Xbar)/g^2
         V12 <- -tmp2/g^2+tmp*Ybar0*b
         V22 <- Omega/g^2-tmp*(b%*%t(b))
-        V <- cbind(rbind(V11,V12), rbind(t(V12), V22))
+        V <- cbind(c(V11,V12), rbind(c(V12), V22))
         dimnames(V) <- list(names(coef(object$lm)), names(coef(object$lm)))
         return(V)
         }
