@@ -13,7 +13,10 @@ the maximum agreement method.
                           bootInterval=FALSE,
                           bootIntType=c("all", "norm", "basic",
                                         "stud", "perc", "bca"),
-                          Bse.=100, B.=300, ...) 
+                          Bse.=100, B.=300,
+                          parallel = c("no", "multicore", "snow"),
+                          ncpus = getOption("boot.ncpus", 1L), cl =
+                          NULL, ...) 
 }
 \arguments{
   \item{object}{An object of class \code{malp}}
@@ -34,6 +37,8 @@ the maximum agreement method.
   \item{Bse.}{The number of bootstrap samples to compute the standard
     errors.}
   \item{B.}{The number of bootstrap sample to compute the confidence
-    intervals.}  
+    intervals.}
+  \item{parallel, ncpus, cl}{These arguments are passed to
+    \code{\link{boot}}.}
 \item{...}{Argument for other type of objects}
 }

@@ -59,16 +59,20 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
                           bootInterval=FALSE,
                           bootIntType=c("all", "norm", "basic",
                                         "stud", "perc", "bca"),
-                          Bse.=100, B.=300, ...) 
+                          Bse.=100, B.=300,
+                          parallel = c("no", "multicore", "snow"),
+                          ncpus = getOption("boot.ncpus", 1L), cl = NULL, ...) 
 {
     vcovMet <- match.arg(vcovMet)
     interval <- match.arg(interval)
+    parallel <- match.arg(parallel)
     bootIntType <- match.arg(bootIntType)
     if (bootInterval)
     {
         if (interval=="prediction")
             warning("interval='prediction' is ignored for bootstrap intervals.")
-        res <- bootMALP(object, newdata, B., Bse., se.fit, vcovMet)
+        res <- bootMALP(object, newdata, B., Bse., se.fit, vcovMet,
+                        parallel, ncpus, cl)
         ci <- confint(res, level=level, type.=bootIntType)
         return(ci)
     }
@@ -260,22 +264,25 @@ print.summary.malp <- function(x, digits=5,
     cat("MSE: ", formatC(x$fitMALP["MSE"], digits = digits), "\n", sep="")
 }
 
-
 bootMALP <- function (object, newdata = NULL, B=300, Bse=100, se.fit=FALSE,
-                      vcovMet = c("Asymptotic", "Boot", "Jackknife")) 
+                      vcovMet = c("Asymptotic", "Boot", "Jackknife"),
+                      parallel = c("no", "multicore", "snow"),
+                      ncpus = getOption("boot.ncpus", 1L), cl = NULL) 
 {
     vcovMet <- match.arg(vcovMet)
-    .bootPr <- function(obj, i, newdata.=NULL, vcovMet., Bse., se.fit.)
+    parallel <- match.arg(parallel)
+    .bootPr <- function(data, i, obj, newdata.=NULL, vcovMet., Bse., se.fit.)
     {
-        fitB <- update(obj, data=obj$data[i,])
+        fitB <- update(obj, data=data[i,])
         pr <- predict(fitB, newdata=newdata., se.fit=se.fit.,
                       vcovMet=vcovMet., Bse.=Bse.)
         if (se.fit.)
-            c(pr$fit, pr$se.fit)
+            c(pr$fit, pr$se.fit^2)
         else pr
     }
-    res <- boot(object, .bootPr, R=B, newdata.=newdata, vcovMet.=vcovMet,
-                Bse.=Bse, se.fit.=se.fit)
+    res <- boot(object$data, .bootPr, R=B, newdata.=newdata, vcovMet.=vcovMet,
+                Bse.=Bse, obj=object, se.fit.=se.fit,
+                parallel=parallel, ncpus=ncpus, cl=cl)
     res$se.fit <- se.fit
     class(res) <- "bootMALP"
     res
@@ -300,8 +307,12 @@ confint.bootMALP <- function(object, parm, level=0.95,
         {
             ind <- if (object$se.fit) c(i,i+n)
                    else i
-            res <- boot.ci(object, type=ti, conf=level, index=ind)
-            c(res[[2L]], tail(res[[4L]][1,],2))
+            res <- try(boot.ci(object, type=ti, conf=level, index=ind),
+                       silent=TRUE)
+            if (inherits(res, "try-error"))
+                c(object$t0[i], rep(NA, 2))
+            else
+                c(res[[2L]], tail(res[[4L]][1,],2))
         })
         rownames(conf) <- c("fit","lower","upper")
         t(conf)})

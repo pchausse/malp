@@ -406,15 +406,26 @@ function will not return a studentized interval.
 
 With `bootInterval=TRUE`, the function return a list of intervals. The
 name of each element is the interval type. If `bootIntType` is not set
-to "all", the function return a list of length equal to 1.
+to "all", the function return a list of length equal to 1. 
 
 ```{r}
 pr <- predict(fit, newdata=newd, bootInterval=TRUE, se.fit=TRUE,
-              vcovMet="Jackknife")
+              vcovMet="Jackknife", B.=100)
 pr$norm
 pr$stud
 pr$bca
 pr$perc
+```
+
+It is possible to speedup the process by changing the arguments
+`parallel`, `ncpus` and `cl`. See the help file of the `boot` function
+for more details. For example, the following would compute the
+bootstrap interval in parallel using 8 CPU's
+
+```{r, eval=FALSE}
+pr <- predict(fit, newdata=newd, bootInterval=TRUE, se.fit=TRUE,
+              vcovMet="Jackknife", B.=100, parallel="multicore",
+              ncpus=8)
 ```
 
 ## Prediction intervals
