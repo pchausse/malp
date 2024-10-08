@@ -1,7 +1,7 @@
 importFrom(stats, model.frame, terms, model.response, lm, coef,
            predict, nobs, delete.response, model.matrix, vcov, pnorm,
            cor, cov, var, printCoefmat, fitted, update, qnorm, confint,
-           formula, lm.fit, sd)
+           formula, lm.fit, sd, residuals)
 importFrom(sandwich, vcovHC)
 importFrom(graphics, abline, points, legend, grid)
 importFrom(boot, boot, boot.ci)

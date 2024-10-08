@@ -164,10 +164,33 @@ plot.malp <- function (x, y=NULL, which=c("MALP", "LSLP", "Both"),
     invisible()
 }
 
-vcov.malp <- function(object, method=c("Boot", "Jackknife"), B=400, ...)
+vcov.malp <- function(object, method=c("Asymptotic", "Boot", "Jackknife"), B=400,
+                      LSdfCorr = FALSE, ...)
 {
     method <- match.arg(method)
-    n <- nrow(object$data)
+    if (method=="Asymptotic")
+    {
+        n <- nobs(object$lm)
+        dfC1 <- object$lm$df.residual/(n-1)
+        dfC2 <- object$lm$df.residual/n
+        if (LSdfCorr)
+            dfC1 <- dfC2 <- 1
+        Omega <- vcov(object$lm)[-1,-1]*dfC2
+        g <- object$gamma
+        b <- coef(object$lm)[-1]
+        Ybar0 <- object$muY-coef(object$lm)[1]
+        Xbar <- colMeans(model.matrix(object$lm))[-1]
+        sig2 <- sum(residuals(object$lm)^2)/object$lm$df.residual
+        tmp <- (1-g^2)^2/(n*g^4)
+        tmp2 <- c(crossprod(Xbar, Omega))
+        V11 <- 2*sig2/(n*(1+g))*dfC1 - tmp*Ybar0^2 + sum(tmp2*Xbar)/g^2
+        V12 <- -tmp2/g^2+tmp*Ybar0*b
+        V22 <- Omega/g^2-tmp*(b%*%t(b))
+        V <- cbind(rbind(V11,V12), rbind(t(V12), V22))
+        dimnames(V) <- list(names(coef(object$lm)), names(coef(object$lm)))
+        return(V)
+        }
+    n <- nrow(object$data)            
     B <- ifelse(method == "Boot", B, n)
     alpha <- sapply(1:B, function(i) {
         ind <- if (method=="Boot") {
@@ -197,14 +220,14 @@ vcov.malp <- function(object, method=c("Boot", "Jackknife"), B=400, ...)
 }
 
 
-summary.malp <- function(object, vcovMet=c("Boot", "Jackknife"),
-                         se=TRUE, ...)
+summary.malp <- function(object, vcovMet=c("Asymptotic", "Boot", "Jackknife"),
+                         se=TRUE, LSdfCorr=FALSE, ...)
 {
     vcovMet <- match.arg(vcovMet)
     b <- coef(object)    
     if (se)
     {
-        V <- vcov(object, method=vcovMet, ...)
+        V <- vcov(object, method=vcovMet, LSdfCorr=LSdfCorr, ...)
         se <- sqrt(diag(V))
         t <- b/se
         pv <- 2*pnorm(-abs(t))

@@ -2,7 +2,10 @@
 title: "The Maximum Agreement Prediction via the Concordance Correlation Coefficient"
 author: "Taeho Kim^[Lehigh University, tak422@lehigh.edu], George Luta^[Georgetown University, George.Luta@georgetown.edu], Matteo Bottai^[Karolinska Institutet, matteo.bottai@ki.se], Pierre Chausse^[University of Waterloo, pchausse@uwaterloo.ca], Gheorghe Doros^[Boston University,, doros@bu.edu], Edsel A. Pena^[University of South Carolina, pena@stat.sc.edu]"
 date: ""
-output: rmarkdown::html_vignette
+output:
+ pdf_document:
+   number_sections: true
+
 abstract: "The vignette explains how to use the malp package to compute maximum agreement prection, construct confidence intervals for the prediction and illustrate the result."
 vignette: >
   %\VignetteIndexEntry{The Maximum Agreement Prediction via the Concordance Correlation Coefficient}
@@ -138,6 +141,49 @@ the different estimators from the expression are adjusted for the loss
 of degrees of freedom. The package offer the option of using the
 `predict.lm` correction.
 
+Alternatively, we can obtain $\sigma_\mathrm{MA}^2(x_0)$ indirectly by
+noting that
+
+\[
+\sigma_\mathrm{MA}^2(x_0) = \{1, x_0\}V\{1, x_0\}',
+\]
+
+where $V$ is the asymptotic variance of $\sqrt{n}(\hat\alpha-\alpha)$ defined as:
+
+\[
+V = \begin{pmatrix}
+\frac{2\sigma^2}{1+\gamma} + 
+	\mu_\mathrm{X}\left(\frac{\sigma^2}{\gamma^2}\Var(X)^{-1} - 
+	\frac{(1-\gamma^2)^2}{\gamma^4}\beta_2\beta_2'
+\right)\mu_\mathrm{X}' && 
+\mu_\mathrm{X} \left(-\frac{\sigma^2}{\gamma^2}\Var(X)^{-1}+\frac{(1-\gamma^2)^2}{\gamma^4}
+\beta_2\beta_2'\right)\\
+\left(-\frac{\sigma^2}{\gamma^2}\Var(X)^{-1}+\frac{(1-\gamma^2)^2}{\gamma^4}
+\beta_2\beta_2'\right)\mu_\mathrm{X}' &&
+\frac{\sigma^2}{\gamma^2}\Var(X)^{-1} - \frac{(1-\gamma^2)^2}{\gamma^4}\beta_2\beta_2'
+\end{pmatrix}\,,
+\]
+
+where $\sigma^2 = \sigma^2_\mathrm{Y}(1-\gamma^2)$ is the variance of
+the least squares residuals. We can simply this expression by using
+the fact that the asymptotic variance $\Omega$ of $\hat\beta_2$ under
+the homoskedasticity assumption is $\sigma^2\Var(X)^{-1}$ and
+$\mu_\mathrm{X}\beta_2=(\mu_\mathrm{Y}-\beta_1)$:
+
+\[
+V = \begin{pmatrix}
+\frac{2\sigma^2}{1+\gamma} + 
+	\frac{1}{\gamma^2} \mu_\mathrm{X}\Omega\mu_\mathrm{X}' - 
+	\frac{(1-\gamma^2)^2}{\gamma^4}(\mu_\mathrm{Y}-\beta_1)^2 && 
+-\frac{1}{\gamma^2}\mu_\mathrm{X}\Omega+\frac{(1-\gamma^2)^2}{\gamma^4}
+(\mu_\mathrm{Y}-\beta_1)\beta_2'\\
+-\frac{1}{\gamma^2}\Omega\mu_\mathrm{X}'+\frac{(1-\gamma^2)^2}{\gamma^4}
+(\mu_\mathrm{Y}-\beta_1)\beta_2 &&
+\frac{1}{\gamma^2}\Omega - \frac{(1-\gamma^2)^2}{\gamma^4}\beta_2\beta_2'
+\end{pmatrix}\,,
+\]
+
+
 # The `malp` package
 
 The main function is `malp`, which returns an object of class
@@ -167,27 +213,49 @@ print(fit, digits=5)
 
 ## The `vcov` method
 
-Currently, there is no closed form expression for the variance of the
-coefficients. The only possible option for now is through simulation
-methods. There are two options for the simulation method: Bootstrap or
-Jackknife. For the bootstrap method, the number of bootstrap samples
-is set by the argument `B`. For example:
+Under the normality assumption, we can estimate the variance of
+$\hat\alpha$ by $\hat{V}/n$. To estimate $\hat{V}$, we simple replace
+the $\beta_i$'s by the least squares estimates, $\Omega$ by the least
+squares covariance matrix times $n$, the population means by the
+sample means, $\sigma^2$ by the estimated variance of the least
+squares residuals and $\gamma$ by the square root of the $R^2$. This
+is the default method of `vcov`:
+
+```{r}
+vcov(fit)
+```
+
+If we relax the normality assumption, we have to rely on simulation
+methods. There are two options: Bootstrap or Jackknife. For the
+bootstrap method, the number of bootstrap samples is set by the
+argument `B`. For example:
 
 ```{r}
 v1 <- vcov(fit, "Boot", B=100)
+v1
 v2 <- vcov(fit, "Jackknife")
 ```
+
+By default, the covariance matrix is not based on least squares
+degrees of freedom correction, we set the argument `LSdfCorr` to
+`TRUE`.
+
+```{r}
+vcov(fit, LSdfCorr=TRUE)
+```
+
 
 ## The `summary` method
 
 This method returns detailed information about the estimation. In
 particular, it returns the standard errors, t-ratios and p-values of
 the $\hat{\alpha}$. The arguments of the function are to specify how
-to compute the standard errors. The options are the same as for
-`vcov`. The method returns an object of class `summary.malp`, which
-has its own `print` method.
+to compute the standard errors (the default is "Asymptotic"). The
+options are the same as for `vcov`. The method returns an object of
+class `summary.malp`, which has its own `print` method.
 
 ```{r}
+print(summary(fit), digits=5)
 print(summary(fit, "Boot", B=100), digits=5)
 ```
 
@@ -199,7 +267,7 @@ samples, by setting the argument `se` to `FALSE`:
 (s <- summary(fit, se=FALSE))
 ```
 
-These "good fit" measures can also be exctracted from the `summary`
+These "good fit" measures can also be extracted from the `summary`
 output. It includes the measure for both MALP and LSLP
 
 ```{r}
@@ -271,6 +339,22 @@ and then compute the CCC:
 ```{r}
 yhat <- predict(fit)
 ccc(y,yhat)
+```
+
+Alternatively, we can compute the standard errors manually using the
+standard errors of $\hat\alpha$. For the above predictions, we have
+the following standard errors:
+
+```{r}
+V <- vcov(fit)
+X <- cbind(1,c(-.3,.3,1.5))
+apply(X, 1, function(x) c(sqrt(t(x)%*%V%*%x)))
+```
+
+Which is identical to the result from the `predict` method:
+
+```{r}
+predict(fit, newdata=newd, se.fit=TRUE)$se.fit
 ```
 
 ## Confidence Intervals
