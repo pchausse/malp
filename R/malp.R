@@ -8,10 +8,19 @@ malp <- function(formula, data, obj=TRUE)
     if (attr(terms(mf), "intercept")!=1)
         stop("The model must include an intercept")
     Y <- model.response(mf)
+    X <- model.matrix(mf, data)
+    omit <- attr(na.omit(cbind(Y,X)), "na.action")
+    if (!is.null(omit))
+    {
+        Y <- Y[-omit]
+        X <- X[-omit,,drop=FALSE]
+        data <- data[-omit,,drop=FALSE]
+        if (length(Y)==0)
+            stop("No observations left after removing missing values")
+    }
     muY <- mean(Y)    
     if (!obj)
     {
-        X <- model.matrix(mf, data)
         fit <- lm.fit(X, Y)
         b <- fit$coefficients
         Yhat <- fit$fitted.values
@@ -28,7 +37,7 @@ malp <- function(formula, data, obj=TRUE)
     coef <- c(alpha1, alpha2)
     names(coef) <- names(coef(fit))
     obj <- list(coefficients=coef, gamma=gamma, lm=fit, varY=var(Y),
-                muY=muY, call=cl, data=data)
+                muY=muY, call=cl, data=data, na.action=omit)
     class(obj) <- "malp"
     obj
 }
@@ -55,7 +64,7 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
                           interval = c("none", "confidence", "prediction"),
                           level = 0.95,
                           includeLS = FALSE, LSdfCorr = FALSE, 
-                          vcovMet = c("Asymptotic", "Boot", "Jackknife"),
+                          vcovMet = c("Asymptotic", "Normal", "Boot", "Jackknife"),
                           bootInterval=FALSE,
                           bootIntType=c("all", "norm", "basic",
                                         "stud", "perc", "bca"),
@@ -88,7 +97,7 @@ predict.malp <- function (object, newdata = NULL, se.fit = FALSE,
             return(pr2)
     }
     sigLS <- pr$se.fit^2 * n
-    if (vcovMet == "Asymptotic") {
+    if (vcovMet == "Normal") {
         if (!LSdfCorr) 
             sigLS <- sigLS * df/n + object$varY * (1 - object$gamma^2)/n
         g2 <- object$gamma^2
@@ -157,7 +166,7 @@ plot.malp <- function (x, y=NULL, which=c("MALP", "LSLP", "Both"),
         plot(y, yhat, pch=pch[1], col=col[1], bg=bg[1], ...)
     else
         plot(y, yhat2, pch=pch[2], col=col[2], bg=bg[2], ylab="yhat", ...)
-    abline(1,1, lty=2, lwd=2)
+    abline(0,1, lty=2, lwd=2)
     if (which == "Both")
     {
         points(y, yhat2, pch=pch[2], col=col[2], bg=bg[2], ...)
@@ -168,11 +177,28 @@ plot.malp <- function (x, y=NULL, which=c("MALP", "LSLP", "Both"),
     invisible()
 }
 
-vcov.malp <- function(object, method=c("Asymptotic", "Boot", "Jackknife"), B=400,
+.Ximat <- function(obj)
+{
+    X <- model.matrix(obj$lm)[,-1, drop=FALSE]
+    Y <- model.response(model.frame(obj$lm))
+    T <- cbind(Y, X)
+    X <- scale(X, scale=FALSE)
+    Y <- Y-mean(Y)
+    T <- cbind(T, Y^2, X*Y)
+    if (ncol(X)==1)
+        T2 <- c(X)^2
+    else
+        T2 <- t(sapply(1:nrow(X), function(i) c(X[i,]%*%t(X[i,]))))
+    T <- cbind(T, T2)
+    dimnames(T) <- NULL
+    var(T)
+}
+
+vcov.malp <- function(object, method=c("Asymptotic", "Normal", "Boot", "Jackknife"), B=400,
                       LSdfCorr = FALSE, ...)
 {
     method <- match.arg(method)
-    if (method=="Asymptotic")
+    if (method=="Normal")
     {
         n <- nobs(object$lm)
         dfC1 <- object$lm$df.residual/(n-1)
@@ -193,7 +219,36 @@ vcov.malp <- function(object, method=c("Asymptotic", "Boot", "Jackknife"), B=400
         V <- cbind(c(V11,V12), rbind(c(V12), V22))
         dimnames(V) <- list(names(coef(object$lm)), names(coef(object$lm)))
         return(V)
-        }
+    }
+    if (method=="Asymptotic")
+    {
+        Xi <- .Ximat(object)
+        p <- length(object$coef)-1
+        Xi11 <- Xi[1:(p+1), 1:(p+1)]
+        Xi22 <- Xi[-(1:(p+1)), -(1:(p+1))]
+        Xi21 <- Xi[-(1:(p+1)), 1:(p+1)]
+        n <- nobs(object$lm)
+        b1 <- coef(object$lm)[-1]
+        g <- object$gamma
+        muX <- colMeans(model.matrix(object$lm)[,-1, drop=FALSE])
+        sigY <- object$varY
+        sigXinv <- chol2inv(object$lm$qr$qr)[-1,-1, drop=FALSE]*n
+        A <- rbind(t(b1)/(2*g*sigY),
+                   sigXinv/g-b1%*%t(b1)/(g^3*sigY),
+                   -kronecker(b1, sigXinv)/g+c(b1%*%t(b1))%*%t(b1)/(2*g^3*sigY))
+        B <- c(1, -b1/g)
+        V <- matrix(0, p+1, p+1)
+        dimnames(V) <- list(names(coef(object$lm)), names(coef(object$lm)))
+        AA <- crossprod(A,Xi22)%*%A
+        BB <- 2*sigY*(1-g)
+        AB <- crossprod(A, Xi21)%*%B
+        V[2:(p+1), 2:(p+1)] <- AA
+        V[2:(p+1),1] <- AB - AA%*%muX
+        V[1, 2:(p+1)] <- t(V[2:(p+1),1])
+        V[1, 1] <- c(crossprod(muX, AA)%*%muX) -2*c(t(muX)%*%AB) + BB
+        return(V/n)
+    }
+    
     n <- nrow(object$data)            
     B <- ifelse(method == "Boot", B, n)
     alpha <- sapply(1:B, function(i) {
@@ -224,7 +279,7 @@ vcov.malp <- function(object, method=c("Asymptotic", "Boot", "Jackknife"), B=400
 }
 
 
-summary.malp <- function(object, vcovMet=c("Asymptotic", "Boot", "Jackknife"),
+summary.malp <- function(object, vcovMet=c("Asymptotic", "Normal", "Boot", "Jackknife"),
                          se=TRUE, LSdfCorr=FALSE, ...)
 {
     vcovMet <- match.arg(vcovMet)

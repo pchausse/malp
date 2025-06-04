@@ -27,43 +27,56 @@ header-includes:
 - \newcommand{\bs}{\boldsymbol} 
 ---
 
+```{r, include=FALSE}
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  paste0("\n \\", "footnotesize","\n\n", x, "\n\n \\normalsize")
+})
+knitr::opts_chunk$set(comment="")
+```
 
 # Introduction
 
-Suppose we have a $p\times 1$ vector of covariates $x$ and a dependent
+Suppose we have a $p\times 1$ vector of covariates $x_0$ and a dependent
 variable $Y$. The MALP predictor is defined as:
 
-\[
-\tilde{Y}^\star(x)   = 
-  \left(1-1/\gamma\right)\mu_\mathrm{Y}+ \left( 1/\gamma\right) \tilde{Y}^\dagger(x)\,,
-\]
+\begin{eqnarray*}
+\tilde{Y}^\star(x_0)   &=& 
+\mu_Y + \frac{1}{\gamma}\Sigma_{XY}'\Sigma_X^{-1}(x_0-\mu_X)\\
+&=& \left(1-1/\gamma\right)\mu_Y+ \left( 1/\gamma\right) \tilde{Y}^\dagger(x_0)\,,
+\end{eqnarray*}
 
 where $\gamma$ is the concordance correlation coefficient (CCC),
-$\mu_\mathrm{Y}$ is the population mean of Y and
-$\tilde{Y}^\dagger(x)$ is the best linear predictor. For any predictor
-$\tilde{Y}$, the CCC is defined as
+$\mu_Y$ is the population mean of Y ,$\Sigma_X$ is the covariance
+matrix of the random vector $X$, $\Sigma_{XY}$ is the vector of covariance
+between $X$ and $Y$ and $\tilde{Y}^\dagger(x_0)$ is the best linear
+predictor defined as
 
-\[
-\gamma = \frac{2\sigma_{\mathrm{Y}\tilde{\mathrm{Y}}}}{
-\sigma^2_\mathrm{Y}+\sigma^2_{\tilde{\mathrm{Y}}}+(\mu_\mathrm{Y}-\mu_{\tilde{\mathrm{Y}}})}\,,
-\]
+\begin{eqnarray*}
+\tilde{Y}^\dagger(x_0) &=& \beta_1 + \beta_2'x_0\\
+&=& (\mu_Y -\Sigma_{XY}'\Sigma_X^{-1}\mu_X) + \Sigma_{XY}'\Sigma^{-1}_Xx_0\\
+&=& \mu_Y + \Sigma_{XY}'\Sigma^{-1}_X (x_0-\mu_X)
+\end{eqnarray*}
 
-where $\sigma_{xy}$ is the covariance between $x$ and $y$ and
-$\sigma^2_x$ is the variance of $x$. When the predictor is the MALP
-defined above, the CCC is equal to the square root of the coefficient
-of determination $R^2$ of the best linear predictor.
+The CCC $\gamma$ is defined as 
 
-Let $X=\{1,x'\}'$ and let the best linear predictor
-$\tilde{Y}^\dagger(x)$ be $X'\beta\equiv \beta_1+x'\beta_2$, where
-$\beta_1=\mu_\mathrm{Y}-\mu_\mathrm{x}'\beta_2$ and
-$\beta_2=\Var(X)^{-1}\Cov(X,Y)$, then the MALP can be written as:
+\begin{eqnarray*}
+\gamma &=& \frac{[\Sigma_{XY}'\Sigma_X^{-1}\Sigma_{XY}]^{1/2}}{\sigma_Y}\\
+&=& \frac{[\beta_2'\Sigma_X\beta_2]^{1/2}}{\sigma_Y}\,.
+\end{eqnarray*}
+
+It is therefore the square root of the coefficient of determination
+$R^2$ from the regression of $Y$ oin $X$. Let $X_0$ be the
+$(p+1)\times 1$ vector $\{1,~x_0'\}'$. Then the MALP predictor can
+also be written as:
 
 \begin{eqnarray*}
 \tilde{Y}^\star(x)  & = & 
-  \left(1-1/\gamma\right)\mu_\mathrm{Y}+ \left( 1/\gamma\right) \left[X'\beta\right]\\
+  \left(1-1/\gamma\right)\mu_\mathrm{Y}+ (\beta_1+x_0'\beta_2)/\gamma\\
 &=& \left[(1-1/\gamma)\mu_\mathrm{Y}+\beta_1/\gamma\right] + 
-x'[\beta_2/\gamma] \\
-&\equiv & \alpha_1 + x'\alpha_2\\
+x_0'[\beta_2/\gamma] \\
+&\equiv & \alpha_1 + x_0'\alpha_2\\
 &\equiv & X'\alpha
 \end{eqnarray*}
 
@@ -80,24 +93,110 @@ $\hat{\beta}_2$ are the least square estimators,
 $\overline{\mathrm{Y}}$ is the sample mean of Y and $\hat\gamma$ is
 the square root of the least square coefficient of determination.
 
-If we assume that $\{Y,x\}$ are jointly normal, the MALP predictor
-$\hat{Y}^\star(x_0)$ is asymptotically normal with the following
-variance:
+To obtain the variance of the MALP predictor under general
+distribution, we first note that $\tilde{Y}^\star(x_0)$ can be written
+as a non-linear function $g(\theta;x_0)$, where
+
+\[
+\theta =
+\begin{pmatrix}
+\mu_Y\\
+\mu_X\\
+\sigma^2_Y\\
+\Sigma_{XY}\\
+\mathrm{Vec}(\Sigma_X)
+\end{pmatrix}
+\]
+
+If we define the ith observation $T_i$ from an iid sample as
+
+\[
+T_i = \begin{pmatrix}
+Y_i\\
+X_i\\
+(Y_i-\bar{Y})^2\\
+(X_i-\bar{X})(Y_i-\bar{Y})\\
+\mathrm{Vec}((X_i-\bar{X})(X_i-\bar{X})')
+\end{pmatrix}\,.
+\]
+
+and we assume that $\text{E}(\|\{Y,X'\}'\|^4)<\infty$, then
+$\sqrt{n}(\bar{T}-\theta)\overset{d}{\to} N(0,\Xi)$, by the
+Lindeberg-Lévy Central Limit Theorem. Then, using the Delta Method, $\sqrt{n}[\hat{Y}^\star(x_0)-\tilde{Y}^\star(x_0)]\overset{d}{\to} N(0,~\nabla g(\theta;x_0)'\Xi\nabla g(\theta;x_0))$, where
+
+\[
+\nabla g(\theta;x_0) = \begin{pmatrix}
+1\\
+-\frac{\beta_2}{\gamma}\\
+\frac{\beta_2'(x_0-\mu_X)}{2\gamma\sigma^2_Y}\\
+\frac{\Sigma_X^{-1}(x_0-\mu_X)}{\gamma}-
+\frac{[\beta_2'(x_0-\mu_X)]\beta_2}{\gamma^3\sigma^2_Y}\\
+-\frac{\text{Vec}[\Sigma_X^{-1}(x_0-\mu_X)\beta_2']}{\gamma}
++ \frac{[\beta_2'(x_0-\mu_X)]\text{Vec}(\beta_2\beta_2')}{2\gamma^3\sigma^2_Y}
+\end{pmatrix}
+\]
+
+We can estimate this variance using the sample estimates of $\beta_2$,
+$\gamma$, $\sigma^2_Y$, $\Sigma_X$, $\mu_X$ and $\Xi$. The
+covariance matrix of $\hat\alpha$ can be obtained by using the fact that:
+
+\[
+\text{Var}[\hat{Y}^\star(x_0)] = \begin{pmatrix}
+1&x_0' \end{pmatrix}\text{Var}(\hat\alpha)
+\begin{pmatrix}
+1\\x_0 \end{pmatrix}
+\]
+
+By rearranging, we get obtain the following result:
+
+\[
+\text{Var}\left[\sqrt{n}(\hat{\alpha}-\alpha)\right]
+\to \begin{pmatrix}
+(\mu_X'A'\Xi_{22} A \mu_X- 2\mu_x'A'\Xi_{21} B + 
+\sigma^2_Y(1-\gamma)) & 
+(B'\Xi_{12} A- \mu_X' A'\Xi_{22} A)\\
+(A'\Xi_{21} B- A'\Xi_{22} A \mu_X) & 
+A'\Xi_{22} A
+\end{pmatrix}\,,
+\]
+
+where
+
+\[
+A =
+\begin{pmatrix}
+\frac{\beta_2'}{2\gamma\sigma_Y^2}\\
+\frac{\Sigma_X^{-1}}{\gamma}-\frac{\beta_2\beta_2'}{\gamma^3\sigma^2_Y}\\
+\frac{-\beta_2\otimes \Sigma_X^{-1}}{\gamma}+
+\frac{Vec(\beta_2\beta_2')\beta_2'}{2\gamma^3\sigma^2_Y}
+\end{pmatrix}~~\mbox{,}~~
+B =
+\begin{pmatrix}
+1\\
+-\frac{\beta_2}{\gamma}
+\end{pmatrix}
+\]
+
+and $\Xi_{ij}$ are partitions of $\Xi$.
+
+
+In general, there is no closed-form expression for the variance, but
+if we assume that the vector $\{Y,X'\}'$ is normally distributed, we
+can show that the above asymptotic variance can be written as:
 
 \begin{eqnarray*}
-\sigma_\mathrm{MA}^2(x_0)  &=&  \sigma_\mathrm{Y}^2(1-\gamma^2) \times  \\
- & & \left[\frac{2}{1 + \gamma} +  \frac{1}{\gamma^2} (x_0 - \mu_\mathrm{X})' \Var(\mathrm{X})^{-1} (x_0 - \mu_\mathrm{X}) 
-- \frac{(1-\gamma^2)}{\sigma_\mathrm{Y}^2 \gamma^4} \left[\Cov(\mathrm{X},\mathrm{Y})'\Var(\mathrm{X})^{-1} (x_0 - \mu_\mathrm{X})\right]^2\right]\\
-&=&  \sigma_\mathrm{Y}^2(1-\gamma^2) \times  \\
- & & \left[\frac{2}{1 + \gamma} +  \frac{1}{\gamma^2} (x_0 - \mu_\mathrm{X})' \Var(\mathrm{X})^{-1} (x_0 - \mu_\mathrm{X}) 
-- \frac{(1-\gamma^2)}{\sigma_\mathrm{Y}^2 \gamma^4} \left[\tilde{Y}^\dagger(x_0)-\mu_\mathrm{Y}\right]^2\right]\\
+\sigma_\mathrm{MA}^2(x_0)  &=&  \sigma_\mathrm{Y}^2(1-\gamma^2)
+ \left[\frac{2}{1 + \gamma} +
+ \frac{(x_0 - \mu_X)' \Sigma_X^{-1} (x_0 - \mu_X)}{\gamma^2} 
+- \frac{(1-\gamma^2)}{\sigma_Y^2 \gamma^4} 
+\left[\beta_2'(x_0 - \mu_X)\right]^2\right]
 \end{eqnarray*}
 
 Since the asymptotic variance of the estimated best linear predictor
-is
+under the homoskedasticity assumption is
 
 \[
-\sigma_\mathrm{LS}^2(x_0) = \sigma_\mathrm{Y}^2(1-\gamma^2) \left[1 + (x_0 - \mu_\mathrm{X}) \Sigma_\mathrm{XX}^{-1}(x_0 - \mu_\mathrm{X})'\right]
+\sigma_\mathrm{LS}^2(x_0) = \sigma_Y^2(1-\gamma^2) \left[1 + (x_0 - \mu_X) \Sigma_X^{-1}(x_0 - \mu_X)'\right]
 \]
 
 We can write $\sigma_\mathrm{MA}^2(x_0)$ as a function of $\sigma_\mathrm{LS}^2(x_0)$:
@@ -105,25 +204,23 @@ We can write $\sigma_\mathrm{MA}^2(x_0)$ as a function of $\sigma_\mathrm{LS}^2(
 \[
 \sigma_\mathrm{MA}^2(x_0) = 
 \frac{\sigma_\mathrm{LS}^2(x_0)}{\gamma^2} + 
-\frac{\sigma_\mathrm{Y}^2(1-\gamma^2)}{\gamma^2} \times
-\left[
+\frac{\sigma_Y^2(1-\gamma^2)}{\gamma^2} \times \left[
 \frac{2\gamma^2-\gamma-1}{1+\gamma} -
-\frac{(1-\gamma^2)}{\sigma_\mathrm{Y}^2 \gamma^2}[\tilde{Y}^\dagger(x_0)-\mu_\mathrm{Y}]^2
+\frac{(1-\gamma^2)}{\sigma_Y^2 \gamma^2}[\beta_2'(x_0-\mu_X)]^2
 \right]
 \]
 
 We obtain consistent estimator of the variances by replacing the
 population values of $\gamma$, $\sigma_\mathrm{LS}^2(x_0)$,
-$\sigma_\mathrm{Y}^2$, $\mu_\mathrm{X}$, $\Sigma_{\mathrm{XX}}$,
-$\tilde{Y}^\dagger(x_0)$ and $\mu_\mathrm{Y}$ by their sample
-estimates. Note that there is no unique way to estimate
-$\sigma_\mathrm{LS}^2(x_0)$. For example, if we estimate it using the following:
+$\sigma_Y^2$, $\mu_X$, $\Sigma_X$, $\beta_2$ and $\mu_Y$ by
+their sample estimates. Note that there is no unique way to estimate
+$\sigma_\mathrm{LS}^2(x_0)$. For example, if we estimate it using the
+following:
 
 \begin{eqnarray*}
-\hat\sigma_\mathrm{Y}^2 &=& \frac{1}{n-1}\sum_{i=1}^n (Y_i-\bar{Y})^2\\
-\hat\gamma &=& \frac{\sum_{i=1}^n (Y_i-\bar{Y})(\hat{Y}^\star_i-\bar{Y})}{
-\sqrt{\sum_{i=1}^n (Y_i-\bar{Y})^2\sum_{i=1}^n (\hat{Y}^\star_i-\bar{Y})^2}}\\
-\hat\Sigma_\mathrm{XX}&=& \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(X_i-\bar{X})'\,,
+\hat\sigma_Y^2 &=& \frac{1}{n-1}\sum_{i=1}^n (Y_i-\bar{Y})^2\\
+\hat\gamma &=& \frac{[\hat{\beta}_2'\hat\Sigma_X\hat\beta_2]^{1/2}}{\hat\sigma_Y}\\
+\hat\Sigma_X&=& \frac{1}{n-1}\sum_{i=1}^n (X_i-\bar{X})(X_i-\bar{X})'\,,
 \end{eqnarray*}
 
 which is the default method that we use in the package, we have the
@@ -131,47 +228,44 @@ following relationship between this estimator and the one computed by
 the `predict` method for `lm` objects. 
 
 \[
-\hat\sigma_\mathrm{LS}^{2}(x_0) = \frac{n-p-1}{n}\hat\sigma_\mathrm{LS}^{2(R)}(x_0) + \frac{\hat\sigma_\mathrm{Y}^2(1-\hat{\gamma}^2)}{n}\,,
+\hat\sigma_\mathrm{LS}^{2}(x_0) = \frac{n-p-1}{n}\hat\sigma_\mathrm{LS}^{2(\text{R})}(x_0) + \frac{\hat\sigma_Y^2(1-\hat{\gamma}^2)}{n}\,,
 \]
 
-where $\hat\sigma_\mathrm{LS}^{2(R)}$ is the one computed by
+where $\hat\sigma_\mathrm{LS}^{2(\text{R})}$ is the one computed by
 `predict.lm` and $\hat\sigma_\mathrm{LS}^{2}(x_0)$ is the default
-estimator computed in the `malp` package. The difference comes for how
+estimator computed in the `malp` package. The difference comes from how
 the different estimators from the expression are adjusted for the loss
 of degrees of freedom. The package offer the option of using the
 `predict.lm` correction.
 
-Alternatively, we can obtain $\sigma_\mathrm{MA}^2(x_0)$ indirectly by
-noting that
+Using the same approach as for the general case, we can obtain the following
+closed-form expression for the asymptotic covariance matrix of $\sqrt{n}(\hat\alpha-\alpha)$ under the normality:
 
 \[
-\sigma_\mathrm{MA}^2(x_0) = \{1, x_0\}V\{1, x_0\}',
-\]
-
-where $V$ is the asymptotic variance of $\sqrt{n}(\hat\alpha-\alpha)$ defined as:
-
-\[
-V = \begin{pmatrix}
+\text{Var}\left[\sqrt{n}(\hat{\alpha}-\alpha)\right]
+\to\begin{pmatrix}
 \frac{2\sigma^2}{1+\gamma} + 
-	\mu_\mathrm{X}\left(\frac{\sigma^2}{\gamma^2}\Var(X)^{-1} - 
+	\mu_X\left(\frac{\sigma^2}{\gamma^2}\Sigma_X^{-1} - 
 	\frac{(1-\gamma^2)^2}{\gamma^4}\beta_2\beta_2'
-\right)\mu_\mathrm{X}' && 
-\mu_\mathrm{X} \left(-\frac{\sigma^2}{\gamma^2}\Var(X)^{-1}+\frac{(1-\gamma^2)^2}{\gamma^4}
+\right)\mu_X' && 
+\mu_X \left(-\frac{\sigma^2}{\gamma^2}\Sigma_X^{-1}+\frac{(1-\gamma^2)^2}{\gamma^4}
 \beta_2\beta_2'\right)\\
-\left(-\frac{\sigma^2}{\gamma^2}\Var(X)^{-1}+\frac{(1-\gamma^2)^2}{\gamma^4}
-\beta_2\beta_2'\right)\mu_\mathrm{X}' &&
-\frac{\sigma^2}{\gamma^2}\Var(X)^{-1} - \frac{(1-\gamma^2)^2}{\gamma^4}\beta_2\beta_2'
+\left(-\frac{\sigma^2}{\gamma^2}\Sigma_X^{-1}+\frac{(1-\gamma^2)^2}{\gamma^4}
+\beta_2\beta_2'\right)\mu_X' &&
+\frac{\sigma^2}{\gamma^2}\Sigma_X^{-1} - \frac{(1-\gamma^2)^2}{\gamma^4}\beta_2\beta_2'
 \end{pmatrix}\,,
 \]
 
-where $\sigma^2 = \sigma^2_\mathrm{Y}(1-\gamma^2)$ is the variance of
-the least squares residuals. We can simply this expression by using
-the fact that the asymptotic variance $\Omega$ of $\hat\beta_2$ under
-the homoskedasticity assumption is $\sigma^2\Var(X)^{-1}$ and
-$\mu_\mathrm{X}\beta_2=(\mu_\mathrm{Y}-\beta_1)$:
+where $\sigma^2 = \sigma^2_Y(1-\gamma^2)$ is the variance of the least
+squares residuals. We can simply this expression further by using the
+fact that the asymptotic variance $\Omega$ of $\hat\beta_2$ under the
+homoskedasticity assumption, which is implied by the normality
+assumption, is $\sigma^2\Sigma_X^{-1}$ and
+$\mu_X'\beta_2=(\mu_Y-\beta_1)$:
 
 \[
-V = \begin{pmatrix}
+\text{Var}\left[\sqrt{n}(\hat{\alpha}-\alpha)\right]
+\to\begin{pmatrix}
 \frac{2\sigma^2}{1+\gamma} + 
 	\frac{1}{\gamma^2} \mu_\mathrm{X}\Omega\mu_\mathrm{X}' - 
 	\frac{(1-\gamma^2)^2}{\gamma^4}(\mu_\mathrm{Y}-\beta_1)^2 && 
@@ -211,66 +305,80 @@ coefficient estimates $\hat\alpha$.
 print(fit, digits=5)
 ```
 
+The object is a list with the following elements:
+
+- `coefficients`: The vector $\hat\alpha$
+- `gamma`: The value of $\hat\gamma$
+- `lm`: The `lm` object from the least squares regression
+- `varY`: The value of $\hat\sigma^2_Y$
+- `na.action`: The observations that were removed due to missing values. 
+- `data`: The `data.frame` used for the estimation. If missing values
+	were present, it excludes them.
+
+
 ## The `vcov` method
 
-Under the normality assumption, we can estimate the variance of
-$\hat\alpha$ by $\hat{V}/n$. To estimate $\hat{V}$, we simple replace
-the $\beta_i$'s by the least squares estimates, $\Omega$ by the least
-squares covariance matrix times $n$, the population means by the
-sample means, $\sigma^2$ by the estimated variance of the least
-squares residuals and $\gamma$ by the square root of the $R^2$. This
-is the default method of `vcov`:
+By default, the covariance matrix of the MALP coefficients is computed
+without assuming normality. This is the best option, because it is
+also valid under normality. The method returns a $(p+1)\times (p+1)$
+covariance matrix named by the variable names in the formula:
 
 ```{r}
 vcov(fit)
 ```
 
-If we relax the normality assumption, we have to rely on simulation
-methods. There are two options: Bootstrap or Jackknife. For the
-bootstrap method, the number of bootstrap samples is set by the
-argument `B`. For example:
+To compute the variance under the normality assumption using the
+closed-form expression presented in the previous section, we set the
+argument `method` to `"Normal"`:
 
 ```{r}
-v1 <- vcov(fit, "Boot", B=100)
+vcov(fit, method="Normal")
+```
+
+Since the covariance matrices derived in the previous section are
+based on the Delta method, we may want to rely on simulation
+techniques if the sample size is too small.  The package offers two
+options: Bootstrap or Jackknife. For the bootstrap method, the number
+of bootstrap samples is set by the argument `B`. For example, the
+first method below computes the estimate using 100 bootstrap samples
+and the second computes the jackknife estimate:
+
+```{r}
+v1 <- vcov(fit, method="Boot", B=100)
 v1
-v2 <- vcov(fit, "Jackknife")
+v2 <- vcov(fit, method="Jackknife")
 ```
 
-By default, the covariance matrix is not based on least squares
-degrees of freedom correction, we set the argument `LSdfCorr` to
-`TRUE`.
+By default, the covariance matrix under normality is not based on
+least squares degrees of freedom correction. If we want this
+correction, which only applies under normality, we set the argument
+`LSdfCorr` to `TRUE`.
 
 ```{r}
-vcov(fit, LSdfCorr=TRUE)
+vcov(fit, method="Normal", LSdfCorr=TRUE)
 ```
-
 
 ## The `summary` method
 
 This method returns detailed information about the estimation. In
 particular, it returns the standard errors, t-ratios and p-values of
-the $\hat{\alpha}$. The arguments of the function are to specify how
-to compute the standard errors (the default is "Asymptotic"). The
-options are the same as for `vcov`. The method returns an object of
-class `summary.malp`, which has its own `print` method.
+the $\hat{\alpha}$. The arguments of the function are used to specify
+how to compute the standard errors. The options are the same as for
+`vcov`, but the argument that specifies the method is `vcovMet`. By
+default, the standard errors are based on the general expression for
+unknown distributions. The method returns an object of class
+`summary.malp`, which has its own `print` method.
 
 ```{r}
 print(summary(fit), digits=5)
 print(summary(fit, "Boot", B=100), digits=5)
 ```
 
-If we only want to see the value of the MSE, PCC and CCC, we can avoid
-computing the standard errors, which can be a problem for very large
-samples, by setting the argument `se` to `FALSE`:
+The three different good fit measures printed by `summary` can also be
+extracted manually for both the MALP and LS fits:
 
 ```{r}
-(s <- summary(fit, se=FALSE))
-```
-
-These "good fit" measures can also be extracted from the `summary`
-output. It includes the measure for both MALP and LSLP
-
-```{r}
+s <- summary(fit)
 cbind(MALP=s$fitMALP, LSLP=s$fitLSLP)
 ```
 
@@ -278,17 +386,16 @@ cbind(MALP=s$fitMALP, LSLP=s$fitLSLP)
 
 The method works like the `predict.lm` method. By default, it predicts
 the dependent variables for the same values of the covariates used to
-fit the model.
+fit the model. The following prints the first four MALP predictors.
 
 ```{r}
 pr <- predict(fit)
 pr[1:4]
 ```
 
-In that case, it returns predicted values only. If the argument
-`se.fit` is set to `TRUE`, it returns a list with the element `fit`
-being the predicted values and the argument `se.fit` being the
-standard errors.
+If the argument `se.fit` is set to `TRUE`, it returns a list with the
+element `fit` being the predicted values and the argument `se.fit`
+being the standard errors of the MALP predictions.
 
 ```{r}
 pr <- predict(fit, se.fit=TRUE)
@@ -296,27 +403,23 @@ pr$fit[1:4]
 pr$se.fit[1:4]
 ```
 
-By default, the standard errors returned by `predict` are based on the
-asymptotic theory under the assumption of the joint normality of
-$\{Y,x\}$. It uses the expression from the Introduction section for
-$\hat\sigma_\mathrm{MA}^2(x_0)$ with
-$\hat\sigma_\mathrm{LS}^{2}(x_0)$. For standard errors based on the
-`predict.lm` version $\hat\sigma_\mathrm{LS}^{2(R)}(x_0)$, we set the
-argument `LSdfCorr` to `TRUE` (it stands for Least Squares degrees of
-freedom Correction).
+As for `vcov` and `summary`, the default standard errors returned by `predict`
+are based on the asymptotic theory for unknown distributions. We can
+also use the closed-form expression under normality by setting the
+argument `vcovMet` to `"Normal"`. For standard errors based on the
+`predict.lm` version $\hat\sigma_\mathrm{LS}^{2(\text{R})}(x_0)$, we
+set the argument `LSdfCorr` to `TRUE` (it stands for Least Squares
+degrees of freedom Correction).
 
 ```{r}
-pr <- predict(fit, se.fit=TRUE, LSdfCorr=TRUE)
+pr <- predict(fit, se.fit=TRUE, vcovMet="Normal", LSdfCorr=TRUE)
 pr$se.fit[1:4]
 ```
 
-If we are not willing to assume normality, we have the option of
-computing the standard errors using the expression
-$\sqrt{X_0'\Var(\hat\alpha)X_0}$, where $X_0=\{1,x_0'\}'$ and
-$\Var(\hat\alpha)$ is computed with `vcov`. All we need to do is to
-set the argument `vcovMet` to either "Boot" or "Jackknife". For the
-"Boot" option, the number of bootstrap sample is set by the argument
-`Bse.`
+For small samples, we also have the option of using simulated
+methods. All we need is to set the argument `vcovMet` to either "Boot"
+or "Jackknife". For the "Boot" option, the number of bootstrap sample
+is set by the argument `Bse.`
 
 ```{r}
 pr <- predict(fit, se.fit=TRUE, vcovMet="Boot", Bse.=100)
@@ -339,22 +442,6 @@ and then compute the CCC:
 ```{r}
 yhat <- predict(fit)
 ccc(y,yhat)
-```
-
-Alternatively, we can compute the standard errors manually using the
-standard errors of $\hat\alpha$. For the above predictions, we have
-the following standard errors:
-
-```{r}
-V <- vcov(fit)
-X <- cbind(1,c(-.3,.3,1.5))
-apply(X, 1, function(x) c(sqrt(t(x)%*%V%*%x)))
-```
-
-Which is identical to the result from the `predict` method:
-
-```{r}
-predict(fit, newdata=newd, se.fit=TRUE)$se.fit
 ```
 
 ## Confidence Intervals
@@ -381,7 +468,7 @@ pr
 
 Note that if the argument `se.fit` is set to `TRUE`, it returns a list
 with the element `fit` being the intervals and the element `se.fit`
-being the standard errors.
+being the standard errors. 
 
 It is also possible to compute bootstrap confidence intervals. The options are 
 
@@ -404,7 +491,7 @@ list. These intervals are computed using `boot` and `boot.ci` from the
 `TRUE`. If `bootIntType` it set to "all" and `se.fit` to `FALSE`, the
 function will not return a studentized interval. 
 
-With `bootInterval=TRUE`, the function return a list of intervals. The
+With `bootInterval=TRUE`, the function returns a list of intervals. The
 name of each element is the interval type. If `bootIntType` is not set
 to "all", the function return a list of length equal to 1. 
 
@@ -457,16 +544,12 @@ Since $S_\mathrm{Y}(1-\gamma^2)$ is the estimated variance of the
 error term of least squares models, if the argument `LSdfCorr` is set
 to `TRUE`, $S_\mathrm{Y}(1-\gamma^2)$ is multiplied $(n-1)/df$, where
 $df$ is the least squares residuals degrees of freedom. Note that
-bootstrap intervals are not available for prediction intervals. For
-valid intervals in case of non-normality, we can set the argument
-`vcovMet` to either "Boot" or "Jackknife" to obtain a consistent
-estimator of $\sigma^2_\mathrm{MA}(x_0)$. 
+bootstrap intervals are not available for prediction intervals. 
 
 ```{r}
 pr1 <- predict(fit, newdata=newd, interval="prediction",
-              vcovMet="Jackknife", includeLS=TRUE)
-pr2 <- predict(fit, newdata=newd, interval="confidence",
-               vcovMet="Jackknife")
+               includeLS=TRUE)
+pr2 <- predict(fit, newdata=newd, interval="confidence")
 pr1$MALP
 pr2
 ```
@@ -486,6 +569,11 @@ added to better evaluate the level of agreement. The following shows
 one example with `which="MALP"`. The other options are "LSLP" and
 "Both".
 
-```{r, fig.align='center'}
-plot(fit, which="MALP", bg=NA, col=1)
+```{r, fig.show="hold", out.width="50%"}
+plot(fit, which="MALP", main="MALP predictor against Y", ylim=c(-6,8), col=c(1,1))
+plot(fit, which="LSLP", main="LSLP predictor against Y", ylim=c(-6,8), col=c(1,1))
+```
+
+```{r, fig.align="center", out.width="50%"}
+plot(fit, which="Both", main="MALP and LSLP predictors against Y", ylim=c(-6,8), col=c(1,1))
 ```

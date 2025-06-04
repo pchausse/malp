@@ -9,7 +9,7 @@ the maximum agreement method.
 \method{predict}{malp}(object, newdata = NULL, se.fit = FALSE,
                           interval = c("none", "confidence", "prediction"), level = 0.95,
                           includeLS = FALSE, LSdfCorr = FALSE, 
-                          vcovMet = c("Asymptotic", "Boot", "Jackknife"),
+                          vcovMet = c("Asymptotic", "Normal", "Boot", "Jackknife"),
                           bootInterval=FALSE,
                           bootIntType=c("all", "norm", "basic",
                                         "stud", "perc", "bca"),
@@ -39,6 +39,6 @@ the maximum agreement method.
   \item{B.}{The number of bootstrap sample to compute the confidence
     intervals.}
   \item{parallel, ncpus, cl}{These arguments are passed to
-    \code{\link{boot}}.}
+    \code{\link[boot]{boot}}.}
 \item{...}{Argument for other type of objects}
 }
