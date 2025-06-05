@@ -8,19 +8,16 @@ malp <- function(formula, data, obj=TRUE)
     if (attr(terms(mf), "intercept")!=1)
         stop("The model must include an intercept")
     Y <- model.response(mf)
-    X <- model.matrix(mf, data)
-    omit <- attr(na.omit(cbind(Y,X)), "na.action")
-    if (!is.null(omit))
+    if (!is.null(omit <- attr(mf, "na.action")))
     {
-        Y <- Y[-omit]
-        X <- X[-omit,,drop=FALSE]
         data <- data[-omit,,drop=FALSE]
-        if (length(Y)==0)
+        if (nrow(data)==0)
             stop("No observations left after removing missing values")
     }
     muY <- mean(Y)    
     if (!obj)
     {
+        X <- model.matrix(mf, data)        
         fit <- lm.fit(X, Y)
         b <- fit$coefficients
         Yhat <- fit$fitted.values
