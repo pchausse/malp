@@ -1,6 +1,7 @@
 \name{plot}
 \alias{plot.malp}
-\title{Plot method for objects if class malp}
+\alias{plot}
+\title{Plot method for objects of class \code{"malp"}}
 \description{
 The function plots the dependent variable against the fitted values from
 the maximum agreement method. The purpose is to compare the fit with the
@@ -18,5 +19,34 @@ the maximum agreement method. The purpose is to compare the fit with the
   \item{col}{The colour of points for the MALP and LS predictions.}
   \item{bg}{The bachground colour of points for the MALP and LS
     predictions.}
-  \item{...}{Other graphics parameters}
+  \item{...}{Other graphical parameters}
+}
+
+
+\references{
+
+Kim, T. & Chausse, P & Matteo Bottai & Doros, G. & Giurcanu,
+M. & Luta, G. & Pena, E.A. (2026).
+\dQuote{Maximum Agreement Linear Predictors.}
+\emph{Electronic Journal of Statistics}, \bold{20}(2), 2892--2942.
+\doi{10.1214/26-EJS2550}
+  
+}
+
+
+\examples{
+
+## Eye data example (see reference)
+
+data(eye)
+fitL <- malp(Stratus~Cirrus, data=subset(eye, Eye=="OS"))
+plot(fitL, which="Both")
+
+## Body fat (see reference)
+
+data(bodyFat)
+fit <- malp(PBF~ABD+WGT+FA+WRT+Age+TGH+NCK+Hip, bodyFat)
+plot(fit, which="Both")
+
+
 }

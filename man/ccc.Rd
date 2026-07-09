@@ -15,6 +15,12 @@ ccc(x, y, type="Lin")
     coefficient introduced by Lin (1989)}
 }
 
+\value{
+
+A numeric vector of length 1.  
+
+}
+
 \references{
 Lin, L. (1989). A concordance correlation coefficient to evaluate
 reproducibility. \emph{Biometrics}, \bold{45}, 255--268.
