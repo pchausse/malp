@@ -14,3 +14,4 @@ Depends: R (>= 4.0.0)
 Description: Estimation and inference for the maximum agreement linear predictor of Kim et al. (2026) <doi:10.1214/26-EJS2550>.
 License: GPL (>= 2)
 Imports: stats, sandwich, graphics, boot
+BugReports: https://github.com/pchausse/malp/issues
