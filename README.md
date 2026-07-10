@@ -1,12 +1,15 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/pchausse/malp/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pchausse/malp/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/malp)](https://CRAN.R-project.org/package=malp)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/malp?color=blue)](https://cranlogs.r-pkg.org/downloads/last-month/malp)
+[![CRAN total downloads](https://cranlogs.r-pkg.org/badges/grand-total/malp?color=blue)](https://cranlogs.r-pkg.org/downloads/total/last-day/malp)
 <!-- badges: end -->
 
 Maximum Agreement Linear Predictor
 ==================================
 
 The `malp` package implements the maximum linear prediction (MALP)
-developped by Kim et al. (2023). The MALP is defined as the linear
+developped by Kim et al. (2026). The MALP is defined as the linear
 predictor that maximizes the concordance correlation coefficient.
 Suppose we have a $p\times 1$ vector of covariates $x$ and a dependent variable
 $Y$. The MALP predictor is:
@@ -120,6 +123,9 @@ Proposed Equation to Convert Central Subfield Macular Thickness
 Measurements in Healthy Subjects.” *Graefe’s Archive for Clinical and
 Experimental Ophthalmology* 249 (9): 1353–7.
 
-Kim, Taeho, George Luta, Matteo Bottai, Pierre Chausse, Gheorghe Doros,
-and Edsel A. Pena. 2023. “Maximum Agreement Linear Prediction via the
-Concordance Correlation Coefficient.” <https://arxiv.org/abs/2304.04221>.
+Kim, T., Chausse, P., Bottai, M., Doros, G., Giurcanu, M., Luta, G., &
+Peña, E. A. (2026). *Maximum Agreement Linear
+Predictors*. **Electronic Journal of Statistics**, **20**(2),
+2892–2942. https://doi.org/10.1214/26-EJS2550
+
+
