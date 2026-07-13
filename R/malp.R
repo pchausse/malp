@@ -371,3 +371,41 @@ confint.bootMALP <- function(object, parm, level=0.95,
     names(all) <- type.
     all
 }
+
+
+## k-fold cross-validation
+
+.getfold <- function(n, k)
+{
+    if (k>n)
+        stop("k must be smaller than the sample size")
+    s <- sample(1:n,n)
+    if (n%%k > 0)
+        s <- c(s, rep(NA, ceiling(n/k)*k-n))
+    matrix(s, ncol=k, byrow=TRUE)
+}
+
+
+kFoldMalp <- function(obj, k=5, repeated=1)
+{
+    if (!inherits(obj, "malp"))
+        stop('obj must be an object of class "malp"')
+    all <- sapply(1:repeated, function(j)
+    {
+        sel <- .getfold(nrow(obj$data),k)
+        val <- numeric()
+        for (i in 1:k)
+        {
+            tr <- c(na.omit(sel[,-i]))
+            te <- na.omit(sel[,i])
+            fit <- malp(formula(obj$lm), data=obj$data[tr,])
+            nd <- obj$data[te,]
+            pr <- predict(fit, newdata=nd)
+            Y <- nd[[as.character(formula(obj$lm)[2])]]
+            val <- rbind(val,
+                         c(PCC=cor(Y,pr), CCC=ccc(Y,pr), MSE=mean((pr-Y)^2)))
+        }
+        colMeans(val)
+    })
+    rowMeans(all)
+}

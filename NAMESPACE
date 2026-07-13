@@ -7,7 +7,7 @@ importFrom(graphics, abline, points, legend, grid)
 importFrom(boot, boot, boot.ci)
 importFrom(utils, tail)
 
-export(malp, predict.malp, vcov.malp, plot.malp, summary.malp, ccc)
+export(malp, predict.malp, vcov.malp, plot.malp, summary.malp, ccc, kFoldMalp)
  
 S3method(print, malp)
 S3method(coef, malp)
