@@ -1,6 +1,6 @@
 Package: malp
 Version: 1.1-0
-Date: 2026-07-13
+Date: 2026-07-22
 Title: Maximum Agreement Linear Prediction
 Authors@R: c(person(given="Pierre", family="Chausse", role=c("aut","cre"),
 	   	    email="pchausse@uwaterloo.ca"),
@@ -11,7 +11,7 @@ Authors@R: c(person(given="Pierre", family="Chausse", role=c("aut","cre"),
 	     person(given="George", family="Luta", role = "ctb",
 	             email = "George.Luta@georgetown.edu"))
 Depends: R (>= 4.0.0)
-Description: Estimation and inference for the maximum agreement linear predictor of Kim et al. (2026) <doi:10.1214/26-EJS2550>.
+Description: Provides tools for estimation and prediction using Maximum Agreement Linear Predictors (MALPs). MALPs provide an alternative to least squares linear predictors when agreement between predicted and observed values, as measured by Lin's Concordance Correlation Coefficient (CCC), is of primary interest. Applications include missing value imputation and calibration studies. The package includes functions for model estimation, prediction, statistical inference, cross-validation, and model diagnostics. The implemented methodology is described in Kim et al. (2026) <doi:10.1214/26-EJS2550>.
 License: GPL (>= 2)
 Imports: stats, sandwich, graphics, boot
 BugReports: https://github.com/pchausse/malp/issues

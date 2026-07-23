@@ -22,6 +22,10 @@ the maximum agreement method. The purpose is to compare the fit with the
   \item{...}{Other graphical parameters}
 }
 
+\value{
+  No value is returned. This method is called for producing a
+  plot. It invisibly returns \code{NULL}.
+}
 
 \references{
 
