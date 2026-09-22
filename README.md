@@ -5,6 +5,15 @@
 [![CRAN total downloads](https://cranlogs.r-pkg.org/badges/grand-total/malp?color=blue)](https://cranlogs.r-pkg.org/downloads/total/last-day/malp)
 <!-- badges: end -->
 
+## Repository moved
+
+Development of **malp** has moved to Codeberg.
+
+Source repository: https://codeberg.org/pchausse/malp
+
+Development builds are available from R-universe:
+https://pchausse.r-universe.dev/malp
+
 Maximum Agreement Linear Predictor
 ==================================
 
